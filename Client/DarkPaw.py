@@ -456,7 +456,7 @@ def loop():					  #GUI
 		target_color='#FF6D00'
 
 		root = tk.Tk()			#Define a window named root
-		root.title('Adeept RaspClaws')	  #Main window title
+		root.title('Adeept DarkPaw')	  #Main window title
 		root.geometry('565x510')  #Main window size, middle of the English letter x.
 		root.config(bg=color_bg)  #Set the background color of root window
 
