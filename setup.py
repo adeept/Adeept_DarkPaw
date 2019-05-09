@@ -8,7 +8,6 @@
 
 import os
 import sys
-import time
 
 
 def search(path,name):
@@ -50,10 +49,6 @@ for x in range(1,4):
 		break
 
 for x in range(1,4):
-	if os.system("sudo pip3 install -U pip setuptools wheel") == 0:
-		break		
-
-for x in range(1,4):
 	if os.system("sudo pip3 install adafruit-pca9685") == 0:
 		break
 
@@ -73,6 +68,10 @@ try:
 	replace_num("/boot/config.txt",'#dtparam=i2c_arm=on','dtparam=i2c_arm=on\nstart_x=1\n')
 except:
 	print('try again')
+
+for x in range(1,4):
+	if os.system("sudo pip3 install -U pip setuptools wheel") == 0:
+		break
 
 for x in range(1,4):
 	if os.system("sudo pip3 install numpy") == 0:
@@ -119,12 +118,7 @@ for x in range(1,4):
 		break
 
 try:
-	os.system("cd //home/pi/adeept_darkpaw/create_ap && sudo make install")
-except:
-	pass
-
-try:
-	os.system("cd //home/pi/create_ap && sudo make install")
+	os.system("sudo cd //home/pi/adeept_darkpaw/create_ap && sudo make install")
 except:
 	pass
 
@@ -138,18 +132,15 @@ path_get=path_get[:-15]
 try:
 	try:
 		os.system('sudo rm -rf //home/pi/.config/autostart')
-		time.sleep(0.2)
 	except:
 		pass
 	os.system('sudo mkdir //home/pi/.config/autostart')
 	os.system('sudo touch //home/pi/.config/autostart/car.desktop')
-	time.sleep(0.2)
 	with open("//home/pi/.config/autostart/car.desktop",'w') as file_to_write:
 		file_to_write.write("[Desktop Entry]\n   Name=Car\n   Comment=Car\n   Exec=sudo python3 //home/pi/adeept_darkpaw/server/server.py\n   Icon=false\n   Terminal=false\n   MutipleArgs=false\n   Type=Application\n   Catagories=Application;Development;\n   StartupNotify=true")
 except:
 	pass
-time.sleep(0.2)
-print(path_get)
+
 print('restarting')
 
 os.system("sudo reboot")
