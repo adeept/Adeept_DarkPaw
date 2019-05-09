@@ -21,11 +21,11 @@ for i in range(0,16):
 	exec('pwm%d_min=150'%i)
 
 '''
-Leg_I   --- forward --- Leg_II
+Leg_I   --- forward --- Leg_III
                |
            robotbody
                |
-Leg_III -- backward --- Leg_IV 
+Leg_II  -- backward --- Leg_IV 
 '''
 Set_Direction = 1
 reach_wiggle = 100
