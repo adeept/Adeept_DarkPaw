@@ -5,12 +5,8 @@
 # Website	 : www.adeept.com
 # E-mail	  : support@adeept.com
 # Author	  : William
-# Date		: 2018/08/22
-# 
-import cv2
-import zmq
-import base64
-import numpy as np
+# Date		: 2019/05/09
+
 from socket import *
 import sys
 import time
@@ -33,69 +29,6 @@ Switch_3 = 0
 Switch_2 = 0
 Switch_1 = 0
 SmoothMode = 0
-
-########>>>>>VIDEO<<<<<########
-
-def video_thread():
-	global footage_socket, font, frame_num, fps
-	context = zmq.Context()
-	footage_socket = context.socket(zmq.SUB)
-	footage_socket.bind('tcp://*:5555')
-	footage_socket.setsockopt_string(zmq.SUBSCRIBE, np.unicode(''))
-
-	font = cv2.FONT_HERSHEY_SIMPLEX
-
-	frame_num = 0
-	fps = 0
-
-def get_FPS():
-	global frame_num, fps
-	while 1:
-		try:
-			time.sleep(1)
-			fps = frame_num
-			frame_num = 0
-		except:
-			time.sleep(1)
-
-def opencv_r():
-	global frame_num
-	while True:
-		try:
-			frame = footage_socket.recv_string()
-			img = base64.b64decode(frame)
-			npimg = np.frombuffer(img, dtype=np.uint8)
-			source = cv2.imdecode(npimg, 1)
-			cv2.putText(source,('PC FPS: %s'%fps),(40,20), font, 0.5,(255,255,255),1,cv2.LINE_AA)
-			try:
-				cv2.putText(source,('CPU Temperature: %s'%CPU_TEP),(370,350), font, 0.5,(128,255,128),1,cv2.LINE_AA)
-				cv2.putText(source,('CPU Usage: %s'%CPU_USE),(370,380), font, 0.5,(128,255,128),1,cv2.LINE_AA)
-				cv2.putText(source,('RAM Usage: %s'%RAM_USE),(370,410), font, 0.5,(128,255,128),1,cv2.LINE_AA)
-
-				#cv2.line(source,(320,240),(260,300),(255,255,255),1)
-				#cv2.line(source,(210,300),(260,300),(255,255,255),1)
-
-				#cv2.putText(source,('%sm'%ultra_data),(210,290), font, 0.5,(255,255,255),1,cv2.LINE_AA)
-			except:
-				pass
-			#cv2.putText(source,('%sm'%ultra_data),(210,290), font, 0.5,(255,255,255),1,cv2.LINE_AA)
-			cv2.imshow("Stream", source)
-			frame_num += 1
-			cv2.waitKey(1)
-
-		except:
-			time.sleep(0.5)
-			break
-
-fps_threading=thread.Thread(target=get_FPS)		 #Define a thread for FPV and OpenCV
-fps_threading.setDaemon(True)							 #'True' means it is a front thread,it would close when the mainloop() closes
-fps_threading.start()									 #Thread starts
-
-video_threading=thread.Thread(target=video_thread)		 #Define a thread for FPV and OpenCV
-video_threading.setDaemon(True)							 #'True' means it is a front thread,it would close when the mainloop() closes
-video_threading.start()									 #Thread starts
-
-########>>>>>VIDEO<<<<<########
 
 
 def replace_num(initial,new_num):   #Call this function to replace data in '.txt' file
