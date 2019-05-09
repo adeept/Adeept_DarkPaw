@@ -34,7 +34,7 @@ All motion-related code is written in the program server/move.py.
 Enter the following command to open (note that it is not to execute) move.py and edit:
 	sudo  nano (path)/move.py
 (The path varies depending on the product you bought. Take RaspClaws as an example. The path of move.py is //home/pi/adeept_raspclaws/server/move.py)
-After opening move.py, change the value of set_direction to 0 (the default is 1), then press ctrl+x to exit, press Y to save change, and press Enter to confirm.
+After opening move.py, change the value of Set_Direction to 0 (the default is 1), then press ctrl+x to exit, press Y to save change, and press Enter to confirm.
 
 
 3. What should I do if the it fails to realize good self-stabilization?
