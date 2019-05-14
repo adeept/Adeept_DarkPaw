@@ -34,12 +34,12 @@ max_wiggle = 150
 '''
 the bigger pixel is, the slower the robot run.
 '''
-pixel = 3
+pixel = 4
 
 '''
 Set PID
 '''
-P = 11
+P = 3
 I = 0.1
 D = 0
 
@@ -48,8 +48,8 @@ D = 0
 '''
 X_fix_output = 0
 Y_fix_output = 0
-X_steady = 1
-Y_steady = -10
+X_steady = 0
+Y_steady = 0
 X_pid = PID.PID()
 X_pid.SetKp(P)
 X_pid.SetKd(I)
@@ -1133,14 +1133,11 @@ def steady():
 
 	X_fix_output -= X_pid.GenOut(X - X_steady)
 	Y_fix_output += Y_pid.GenOut(Y - Y_steady)
-	#print(X - X_steady)
-	#print(X_fix_output)
 	X_fix_output = ctrl_range(X_fix_output, 100, -100)
 	Y_fix_output = ctrl_range(Y_fix_output, 100, -100)
-	#print(Y - Y_steady)
-	ctrl_pitch_roll(150, X_fix_output, 0)
-	#ctrl_pitch_roll(150, X_fix_output, Y_fix_output)
-	#ctrl_pitch_roll(150, 0, Y_fix_output)
+	#ctrl_pitch_roll(150, -X_fix_output, 0)
+	#print(X)
+	ctrl_pitch_roll(150, -X_fix_output, Y_fix_output)
 
 
 def relesae():

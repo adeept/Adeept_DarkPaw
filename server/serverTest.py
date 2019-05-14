@@ -18,13 +18,23 @@ import psutil
 import switch
 import LED
 
+'''
+Initiation number of steps, don't have to change it.
+'''
 step_set = 1
-speed_set = 100
-DPI = 17
 
-new_frame = 0
+'''
+The range of the legs wiggling, you can decrease it to make the robot slower while the frequency unchanged.
+DO NOT increase or it may cause mechanical collisions.
+'''
+speed_set = 150
+
+'''
+Initiation commands
+'''
 direction_command = 'no'
 turn_command = 'no'
+
 pwm = Adafruit_PCA9685.PCA9685()
 pwm.set_pwm_freq(50)
 LED = LED.LED()
@@ -92,6 +102,7 @@ def move_thread():
     while 1:
         if not steadyMode:
             if direction_command == 'forward' and turn_command == 'no':
+                stand_stu = 0
                 move.dove_move_tripod(step_set, 150, 'forward')
                 step_set += 1
                 if step_set == 9:
@@ -99,6 +110,7 @@ def move_thread():
                 continue
 
             elif direction_command == 'backward' and turn_command == 'no':
+                stand_stu = 0
                 move.dove_move_tripod(step_set, 150, 'backward')
                 step_set += 1
                 if step_set == 9:
@@ -109,6 +121,7 @@ def move_thread():
                 pass
 
             if turn_command != 'no':
+                stand_stu = 0
                 move.dove_move_diagonal(step_set, 150, turn_command)
                 step_set += 1
                 if step_set == 9:
@@ -118,9 +131,14 @@ def move_thread():
                 pass
 
             if turn_command == 'no' and direction_command == 'stand':
-                move.robot_stand(150)
-                #move.steady()
-                step_set = 1
+                if stand_stu == 0:
+                    move.robot_stand(150)
+                    step_set = 1
+                    stand_stu = 1
+                else:
+                    time.sleep(0.01)
+                    pass
+
             pass
         else:
             pass
@@ -187,16 +205,18 @@ def run():
             turn_command = 'no'
 
         elif 'headup' == data:
-            move.look_up()
+            move.ctrl_pitch_roll(150, -100, 0)
         elif 'headdown' == data:
-            move.look_down()
+            move.ctrl_pitch_roll(150, 100, 0)
         elif 'headhome' == data:
-            move.look_home()
+            move.ctrl_pitch_roll(150, 0, 0)
 
         elif 'headleft' == data:
-            move.look_left()
+            #move.look_left()
+            pass
         elif 'headright' == data:
-            move.look_right()
+            #move.look_right()
+            pass
 
         elif 'wsR' in data:
             try:
@@ -337,6 +357,8 @@ if __name__ == '__main__':
             print('waiting for connection...')
             tcpCliSock, addr = tcpSerSock.accept()
             print('...connected from :', addr)
+            move.robot_stand(150)
+
             break
         except:
             LED.colorWipe(Color(0,0,0))
