@@ -218,13 +218,10 @@ def run():
         elif 'headhome' == data:
             move.ctrl_pitch_roll(150, 0, 0)
 
-        elif 'headleft' == data:
-            #move.look_left()
-            pass
-        elif 'headright' == data:
-            #move.look_right()
-            pass
-
+        elif 'low' == data:
+            move.robot_stand(-150)
+        elif 'hight' == data:
+            move.robot_stand(150)
         elif 'wsR' in data:
             try:
                 set_R=data.split()
