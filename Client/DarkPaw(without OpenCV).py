@@ -121,11 +121,11 @@ def call_headdown(event):
 
 
 def call_headleft(event):
-	tcpClicSock.send(('headleft').encode())
+	tcpClicSock.send(('low').encode())
 
 
 def call_headright(event):
-	tcpClicSock.send(('headright').encode())
+	tcpClicSock.send(('hight').encode())
 
 
 def call_headhome(event):
@@ -491,8 +491,8 @@ def loop():					  #GUI
 
 		Btn_up = tk.Button(root, width=8, text='Up',fg=color_text,bg=color_btn,relief='ridge')
 		Btn_down = tk.Button(root, width=8, text='Down',fg=color_text,bg=color_btn,relief='ridge')
-		Btn_left = tk.Button(root, width=8, text='Left',fg=color_text,bg=color_btn,relief='ridge')
-		Btn_right = tk.Button(root, width=8, text='Right',fg=color_text,bg=color_btn,relief='ridge')
+		Btn_left = tk.Button(root, width=8, text='Low',fg=color_text,bg=color_btn,relief='ridge')
+		Btn_right = tk.Button(root, width=8, text='High',fg=color_text,bg=color_btn,relief='ridge')
 		Btn_home = tk.Button(root, width=8, text='Home',fg=color_text,bg=color_btn,relief='ridge')
 		Btn_up.place(x=400,y=195)
 		Btn_down.place(x=400,y=265)

@@ -188,11 +188,11 @@ def call_headdown(event):
 
 
 def call_headleft(event):
-	tcpClicSock.send(('headleft').encode())
+	tcpClicSock.send(('low').encode())
 
 
 def call_headright(event):
-	tcpClicSock.send(('headright').encode())
+	tcpClicSock.send(('hight').encode())
 
 
 def call_headhome(event):
@@ -498,10 +498,10 @@ def loop():					  #GUI
 		#canvas_rec=canvas_ultra.create_rectangle(0,0,340,30,fill = '#FFFFFF',width=0)
 		#canvas_text=canvas_ultra.create_text((90,11),text='Ultrasonic Output: 0.75m',fill=color_text)
 		################################
-		Btn_Smooth = tk.Button(root, width=8, text='Smooth',fg=color_text,bg=color_btn,relief='ridge')
-		Btn_Smooth.place(x=240,y=230)
-		Btn_Smooth.bind('<ButtonPress-1>', call_Smooth)
-		root.bind('<KeyPress-f>', call_Smooth)
+		#Btn_Smooth = tk.Button(root, width=8, text='Smooth',fg=color_text,bg=color_btn,relief='ridge')
+		#Btn_Smooth.place(x=240,y=230)
+		#Btn_Smooth.bind('<ButtonPress-1>', call_Smooth)
+		#root.bind('<KeyPress-f>', call_Smooth)
 
 		Btn_Switch_1 = tk.Button(root, width=8, text='Port 1',fg=color_text,bg=color_btn,relief='ridge')
 		Btn_Switch_2 = tk.Button(root, width=8, text='Port 2',fg=color_text,bg=color_btn,relief='ridge')
@@ -562,8 +562,8 @@ def loop():					  #GUI
 
 		Btn_up = tk.Button(root, width=8, text='Up',fg=color_text,bg=color_btn,relief='ridge')
 		Btn_down = tk.Button(root, width=8, text='Down',fg=color_text,bg=color_btn,relief='ridge')
-		Btn_left = tk.Button(root, width=8, text='Left',fg=color_text,bg=color_btn,relief='ridge')
-		Btn_right = tk.Button(root, width=8, text='Right',fg=color_text,bg=color_btn,relief='ridge')
+		Btn_left = tk.Button(root, width=8, text='Low',fg=color_text,bg=color_btn,relief='ridge')
+		Btn_right = tk.Button(root, width=8, text='High',fg=color_text,bg=color_btn,relief='ridge')
 		Btn_home = tk.Button(root, width=8, text='Home',fg=color_text,bg=color_btn,relief='ridge')
 		Btn_up.place(x=400,y=195)
 		Btn_down.place(x=400,y=265)
