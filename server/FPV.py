@@ -109,12 +109,12 @@ class FPV:
                     if Y < (240-tor):
                         error = (240-Y)/5
                         outv = int(error)
-                        move.look_up(outv)
+                        #move.look_up(outv)
                         Y_lock = 0
                     elif Y > (240+tor):
                         error = (Y-240)/5
                         outv = int(error)
-                        move.look_down(outv)
+                        #move.look_down(outv)
                         Y_lock = 0
                     else:
                         Y_lock = 1
@@ -122,12 +122,12 @@ class FPV:
                     if X < (320-tor):
                         error_X = (320-X)/5
                         outv_X = int(error_X)
-                        move.look_left(outv_X)
+                        #move.look_left(outv_X)
                         X_lock = 0
                     elif X > (320+tor):
                         error_X = (X-320)/5
                         outv_X = int(error_X)
-                        move.look_right(outv_X)
+                        #move.look_right(outv_X)
                         X_lock = 0
                         X_lock = 0
                     else:
