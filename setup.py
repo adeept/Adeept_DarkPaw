@@ -78,7 +78,7 @@ for x in range(1,4):
 		break
 
 for x in range(1,4):
-	if os.system("sudo apt-get install libopencv-dev python3-opencv") == 0:
+	if os.system("sudo apt-get install -y libopencv-dev python3-opencv") == 0:
 		break
 
 for x in range(1,4):
