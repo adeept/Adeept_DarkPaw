@@ -10,31 +10,31 @@ import RPi.GPIO as GPIO
 
 def switchSetup():
     GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(29, GPIO.OUT)
-    GPIO.setup(31, GPIO.OUT)
-    GPIO.setup(33, GPIO.OUT)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(5, GPIO.OUT)
+    GPIO.setup(6, GPIO.OUT)
+    GPIO.setup(13, GPIO.OUT)
 
 def switch(port, status):
     if port == 1:
         if status == 1:
-            GPIO.output(29, GPIO.HIGH)
+            GPIO.output(5, GPIO.HIGH)
         elif status == 0:
-            GPIO.output(29,GPIO.LOW)
+            GPIO.output(5,GPIO.LOW)
         else:
             pass
     elif port == 2:
         if status == 1:
-            GPIO.output(31, GPIO.HIGH)
+            GPIO.output(6, GPIO.HIGH)
         elif status == 0:
-            GPIO.output(31,GPIO.LOW)
+            GPIO.output(6,GPIO.LOW)
         else:
             pass
     elif port == 3:
         if status == 1:
-            GPIO.output(33, GPIO.HIGH)
+            GPIO.output(13, GPIO.HIGH)
         elif status == 0:
-            GPIO.output(33,GPIO.LOW)
+            GPIO.output(13,GPIO.LOW)
         else:
             pass
     else:
