@@ -7,7 +7,7 @@
 # Date		: 2019/04/08
 import time
 import Adafruit_PCA9685
-from mpu6050 import mpu6050
+
 import Kalman_filter
 import PID
 
@@ -60,7 +60,13 @@ Y_pid.SetKd(I)
 Y_pid.SetKi(D)
 pwm = Adafruit_PCA9685.PCA9685()
 pwm.set_pwm_freq(50)
-sensor = mpu6050(0x68)
+
+try:
+	from mpu6050 import mpu6050
+	sensor = mpu6050(0x68)
+except:
+	pass
+
 kalman_filter_X =  Kalman_filter.Kalman_filter(0.001,0.1)
 kalman_filter_Y =  Kalman_filter.Kalman_filter(0.001,0.1)
 
