@@ -58,8 +58,6 @@ Y_pid = PID.PID()
 Y_pid.SetKp(P)
 Y_pid.SetKd(I)
 Y_pid.SetKi(D)
-pwm = Adafruit_PCA9685.PCA9685()
-pwm.set_pwm_freq(50)
 
 try:
 	from mpu6050 import mpu6050
