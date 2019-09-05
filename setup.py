@@ -1,6 +1,5 @@
 #!/usr/bin/python3
-# File name   : motor.py
-# Description : Control Motors 
+# File name   : setup.py
 # Website     : www.adeept.com
 # E-mail      : support@adeept.com
 # Author      : William
