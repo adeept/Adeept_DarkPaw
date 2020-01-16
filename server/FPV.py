@@ -1,10 +1,9 @@
 #!/usr/bin/env/python3
 # File name   : server.py
 # Description : for FPV video and OpenCV functions
-# Website     : www.adeept.com
-# E-mail      : support@adeept.com
+# Website     : www.gewbot.com
 # Author      : William(Based on Adrian Rosebrock's OpenCV code on pyimagesearch.com)
-# Date        : 2018/08/22
+# Date        : 2019/08/28
 
 import time
 import threading
@@ -18,17 +17,142 @@ import imutils
 from collections import deque
 import psutil
 import os
+import SpiderG
+import PID
 import LED
 import datetime
 from rpi_ws281x import *
-import move
+import switch
+import numpy as np #1
 
+pid = PID.PID()
+pid.SetKp(0.5)
+pid.SetKd(0)
+pid.SetKi(0)
 Y_lock = 0
 X_lock = 0
 tor    = 17
 FindColorMode = 0
 WatchDogMode  = 0
-LED = LED.LED()
+UltraData = 3
+LED  = LED.LED()
+
+#2
+CVrun = 1
+FindLineMode = 0
+linePos_1 = 440
+linePos_2 = 380
+lineColorSet = 255
+frameRender = 0
+findLineError = 20
+
+SpiderG.move_init()#2
+
+#2
+camera = picamera.PiCamera() 
+camera.resolution = (640, 480)
+camera.framerate = 20
+rawCapture = PiRGBArray(camera, size=(640, 480))
+
+temp = 0
+def findLineCtrl(posInput, setCenter):#2
+    global temp
+    temp+=1
+    if posInput and temp >= 20:
+        if posInput > (setCenter + findLineError):
+            temp = 0
+            SpiderG.walk('turnright')#2
+            time.sleep(0.2)
+            pass
+        elif posInput < (setCenter - findLineError):
+            temp = 0
+            SpiderG.walk('turnleft')#2
+            time.sleep(0.2)
+            pass
+        else:
+            if CVrun:
+                # move.move(80, 'forward', 'no', 0.5)
+                SpiderG.walk('forward')#2
+            #forward
+            pass
+    else:
+        # if CVrun:
+        #   try:
+        #       move.motorStop()
+        #   except Exception as e:
+        #       print(e)
+        #   move.move(80, 'backward', 'no', 0.5)
+        pass
+
+def cvFindLine():#2
+    global frame_findline, camera#3
+    # camera.exposure_mode = 'off'
+    frame_findline = cv2.cvtColor(frame_image, cv2.COLOR_BGR2GRAY)
+    retval, frame_findline =  cv2.threshold(frame_findline, 0, 255, cv2.THRESH_OTSU)# 对图片进行二值化处理
+    frame_findline = cv2.erode(frame_findline, None, iterations=6)# 侵蚀
+    colorPos_1 = frame_findline[linePos_1]
+    colorPos_2 = frame_findline[linePos_2]
+
+    try:
+        lineColorCount_Pos1 = np.sum(colorPos_1 == lineColorSet)
+        lineColorCount_Pos2 = np.sum(colorPos_2 == lineColorSet)
+
+        lineIndex_Pos1 = np.where(colorPos_1 == lineColorSet)
+        lineIndex_Pos2 = np.where(colorPos_2 == lineColorSet)
+
+        if lineColorCount_Pos1 == 0:
+            lineColorCount_Pos1 = 1
+        if lineColorCount_Pos2 == 0:
+            lineColorCount_Pos2 = 1
+
+        left_Pos1 = lineIndex_Pos1[0][lineColorCount_Pos1-1]
+        right_Pos1 = lineIndex_Pos1[0][0]
+        center_Pos1 = int((left_Pos1+right_Pos1)/2)
+
+        left_Pos2 = lineIndex_Pos2[0][lineColorCount_Pos2-1]
+        right_Pos2 = lineIndex_Pos2[0][0]
+        center_Pos2 = int((left_Pos2+right_Pos2)/2)
+
+        center = int((center_Pos1+center_Pos2)/2)
+    except Exception as e:#3
+        print(e)
+        center = None
+
+    findLineCtrl(center, 320)
+    # print(center)
+    try:
+        if lineColorSet == 255:
+            cv2.putText(frame_image,('Following White Line'),(30,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(128,255,128),1,cv2.LINE_AA)
+            cv2.putText(frame_findline,('Following White Line'),(30,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(128,255,128),1,cv2.LINE_AA)
+        else:
+            cv2.putText(frame_image,('Following Black Line'),(30,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(128,255,128),1,cv2.LINE_AA)
+            cv2.putText(frame_findline,('Following Black Line'),(30,50), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(128,255,128),1,cv2.LINE_AA)
+
+        if frameRender:
+            cv2.line(frame_image,(left_Pos1,(linePos_1+30)),(left_Pos1,(linePos_1-30)),(255,128,64),1)
+            cv2.line(frame_image,(right_Pos1,(linePos_1+30)),(right_Pos1,(linePos_1-30)),(64,128,255),)
+            cv2.line(frame_image,(0,linePos_1),(640,linePos_1),(255,255,64),1)
+
+            cv2.line(frame_image,(left_Pos2,(linePos_2+30)),(left_Pos2,(linePos_2-30)),(255,128,64),1)
+            cv2.line(frame_image,(right_Pos2,(linePos_2+30)),(right_Pos2,(linePos_2-30)),(64,128,255),1)
+            cv2.line(frame_image,(0,linePos_2),(640,linePos_2),(255,255,64),1)
+
+            cv2.line(frame_image,((center-20),int((linePos_1+linePos_2)/2)),((center+20),int((linePos_1+linePos_2)/2)),(0,0,0),1)
+            cv2.line(frame_image,((center),int((linePos_1+linePos_2)/2+20)),((center),int((linePos_1+linePos_2)/2-20)),(0,0,0),1)
+        else:
+            cv2.line(frame_findline,(left_Pos1,(linePos_1+30)),(left_Pos1,(linePos_1-30)),(255,128,64),1)
+            cv2.line(frame_findline,(right_Pos1,(linePos_1+30)),(right_Pos1,(linePos_1-30)),(64,128,255),1)
+            cv2.line(frame_findline,(0,linePos_1),(640,linePos_1),(255,255,64),1)
+
+            cv2.line(frame_findline,(left_Pos2,(linePos_2+30)),(left_Pos2,(linePos_2-30)),(255,128,64),1)
+            cv2.line(frame_findline,(right_Pos2,(linePos_2+30)),(right_Pos2,(linePos_2-30)),(64,128,255),1)
+            cv2.line(frame_findline,(0,linePos_2),(640,linePos_2),(255,255,64),1)
+
+            cv2.line(frame_findline,((center-20),int((linePos_1+linePos_2)/2)),((center+20),int((linePos_1+linePos_2)/2)),(0,0,0),1)
+            cv2.line(frame_findline,((center),int((linePos_1+linePos_2)/2+20)),((center),int((linePos_1+linePos_2)/2-20)),(0,0,0),1)
+    except Exception as e:
+        print(e)
+        pass
 
 class FPV: 
     def __init__(self):
@@ -46,16 +170,34 @@ class FPV:
     def FindColor(self,invar):
         global FindColorMode
         FindColorMode = invar
-        if not FindColorMode:
-            move.look_home()
+        # if not FindColorMode: #2
+        #     SpiderG.move_init()
 
 
     def WatchDog(self,invar):
         global WatchDogMode
         WatchDogMode = invar
 
+    def setExpCom(self,invar):#Z
+        if invar > 25:
+            invar = 25
+        elif invar < -25:
+            invar = -25
+        else:
+            camera.exposure_compensation = invar
+
+
+    def defaultExpCom(self):#Z
+        camera.exposure_compensation = 0
+
+
+    def UltraData(self,invar):
+        global UltraData
+        UltraData = invar
+
 
     def capture_thread(self,IPinver):
+        global frame_image,camera#Z
         ap = argparse.ArgumentParser()            #OpenCV initialization
         ap.add_argument("-b", "--buffer", type=int, default=64,
             help="max buffer size")
@@ -64,11 +206,6 @@ class FPV:
 
         font = cv2.FONT_HERSHEY_SIMPLEX
 
-        camera = picamera.PiCamera() 
-        camera.resolution = (640, 480)
-        camera.framerate = 20
-        rawCapture = PiRGBArray(camera, size=(640, 480))
-
         context = zmq.Context()
         footage_socket = context.socket(zmq.PUB)
         print(IPinver)
@@ -76,6 +213,7 @@ class FPV:
 
         avg = None
         motionCounter = 0
+        #time.sleep(4)
         lastMovtionCaptured = datetime.datetime.now()
 
         for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
@@ -84,9 +222,14 @@ class FPV:
             cv2.line(frame_image,(320,220),(320,260),(128,255,128),1)
             timestamp = datetime.datetime.now()
 
-            if not FindColorMode:
-                pass
+            if FindLineMode:#2
+                cvFindLine()
+                camera.exposure_mode = 'off'
             else:
+                camera.exposure_mode = 'auto'
+
+            if FindColorMode:
+                print(FindColorMode)
                 ####>>>OpenCV Start<<<####
                 hsv = cv2.cvtColor(frame_image, cv2.COLOR_BGR2HSV)
                 mask = cv2.inRange(hsv, self.colorLower, self.colorUpper)
@@ -108,49 +251,59 @@ class FPV:
 
                     if Y < (240-tor):
                         error = (240-Y)/5
-                        outv = int(error)
-                        #move.look_up(outv)
+                        outv = int(round((pid.GenOut(error)),0))
+                        SpiderG.up(outv)
                         Y_lock = 0
                     elif Y > (240+tor):
                         error = (Y-240)/5
-                        outv = int(error)
-                        #move.look_down(outv)
+                        outv = int(round((pid.GenOut(error)),0))
+                        SpiderG.down(outv)
                         Y_lock = 0
                     else:
                         Y_lock = 1
+
                     
-                    if X < (320-tor):
-                        error_X = (320-X)/5
-                        outv_X = int(error_X)
-                        #move.look_left(outv_X)
+                    if X < (320-tor*3):
+                        error = (320-X)/5
+                        outv = int(round((pid.GenOut(error)),0))
+                        SpiderG.lookleft(outv)
+                        #move.move(70, 'no', 'left', 0.6)
                         X_lock = 0
-                    elif X > (320+tor):
-                        error_X = (X-320)/5
-                        outv_X = int(error_X)
-                        #move.look_right(outv_X)
-                        X_lock = 0
+                    elif X > (330+tor*3):
+                        error = (X-240)/5
+                        outv = int(round((pid.GenOut(error)),0))
+                        SpiderG.lookright(outv)
+                        #move.move(70, 'no', 'right', 0.6)
                         X_lock = 0
                     else:
+                        #move.motorStop()
                         X_lock = 1
 
                     if X_lock == 1 and Y_lock == 1:
-                        LED.breath_color_set('red')
+                        switch.switch(1,1)
+                        switch.switch(2,1)
+                        switch.switch(3,1)
+                    else:
+                        switch.switch(1,0)
+                        switch.switch(2,0)
+                        switch.switch(3,0)
+
+                        # if UltraData > 0.5:
+                        #     move.move(70, 'forward', 'no', 0.6)
+                        # elif UltraData < 0.4:
+                        #     move.move(70, 'backward', 'no', 0.6)
+                        #     print(UltraData)
+                        # else:
+                        #     move.motorStop()
+                    
 
                 else:
                     cv2.putText(frame_image,'Target Detecting',(40,60), font, 0.5,(255,255,255),1,cv2.LINE_AA)
-                    LED.breath_color_set('yellow')
 
-                for i in range(1, len(pts)):
-                    if pts[i - 1] is None or pts[i] is None:
-                        continue
-                    thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
-                    cv2.line(frame_image, pts[i - 1], pts[i], (0, 0, 255), thickness)
                 ####>>>OpenCV Ends<<<####
                 
 
-            if not WatchDogMode:
-                pass
-            else:
+            if WatchDogMode:
                 gray = cv2.cvtColor(frame_image, cv2.COLOR_BGR2GRAY)
                 gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
@@ -171,8 +324,7 @@ class FPV:
                 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
                     cv2.CHAIN_APPROX_SIMPLE)
                 cnts = imutils.grab_contours(cnts)
-                #print('x')
-             
+                # print('x')
                 # loop over the contours
                 for c in cnts:
                     # if the contour is too small, ignore it
@@ -187,14 +339,23 @@ class FPV:
                     motionCounter += 1
                     #print(motionCounter)
                     #print(text)
-                    LED.breath_color_set('red')
+                    LED.colorWipe(255,16,0)
                     lastMovtionCaptured = timestamp
+                    switch.switch(1,1)
+                    switch.switch(2,1)
+                    switch.switch(3,1)
 
                 if (timestamp - lastMovtionCaptured).seconds >= 0.5:
-                    LED.breath_color_set('blue')
+                    LED.colorWipe(255,255,0)
+                    switch.switch(1,0)
+                    switch.switch(2,0)
+                    switch.switch(3,0)
 
 
-            encoded, buffer = cv2.imencode('.jpg', frame_image)
+            if FindLineMode and not frameRender:#2
+                encoded, buffer = cv2.imencode('.jpg', frame_findline)
+            else:
+                encoded, buffer = cv2.imencode('.jpg', frame_image)
             jpg_as_text = base64.b64encode(buffer)
             footage_socket.send(jpg_as_text)
 

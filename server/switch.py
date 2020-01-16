@@ -1,8 +1,7 @@
 #!/usr/bin/env/python
 # File name   : switch.py
 # Production  : HAT
-# Website     : www.adeept.com
-# E-mail      : support@adeept.com
+# Website     : www.gewbot.com
 # Author      : William
 # Date        : 2018/08/22
 
