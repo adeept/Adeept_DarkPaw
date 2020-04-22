@@ -43,6 +43,7 @@ try:
 	steadyMode = 0
 except:
 	MPU_connection = 0
+	steadyMode = 0
 	print('mpu6050 disconnected\nmpu6050 is not connected and the related functions are unavailable.')
 
 FLB_port = 0
