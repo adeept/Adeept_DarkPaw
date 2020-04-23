@@ -1,8 +1,7 @@
 #!/usr/bin/env/python
 # File name   : server.py
-# Production  : GWR
-# Website     : www.gewbot.com
-# E-mail      : gewubot@163.com
+# Production  : DarkPaw
+# Website     : www.adeept.com
 # Author      : William
 # Date        : 2019/07/24
 
