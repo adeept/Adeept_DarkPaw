@@ -109,20 +109,20 @@ def run():
             tcpCliSock.send(('Switch_3_off').encode())
 
 
-        elif 'function_1_on' in data:                    #Steady
+        elif 'steady' in data:                    #Steady
             functionMode = 1
             SpiderG.steadyModeOn()
-            tcpCliSock.send(('function_1_on').encode())
+            tcpCliSock.send(('steady').encode())
 
-        elif 'function_2_on' in data:                    #Color Find
+        elif 'FindColor' in data:                    #Color Find
             functionMode = 2
             fpv.FindColor(1)
-            tcpCliSock.send(('function_2_on').encode())
+            tcpCliSock.send(('FindColor').encode())
 
-        elif 'function_3_on' in data:                    #Watch Dog
+        elif 'WatchDog' in data:                    #Watch Dog
             functionMode = 3
             fpv.WatchDog(1)
-            tcpCliSock.send(('function_3_on').encode())
+            tcpCliSock.send(('WatchDog').encode())
 
         elif 'function_4_on' in data:                    #T/D
             functionMode = 4
@@ -143,9 +143,19 @@ def run():
             functionMode = 0
             tcpCliSock.send(('function_6_off').encode())
 
+        if 'funEnd' in data:
+            SpiderG.steadyModeOff()
+            fpv.FindColor(0)
+            fpv.WatchDog(0)
+            functionMode = 0
+            switch.switch(1,0)
+            switch.switch(2,0)
+            switch.switch(3,0)
+            tcpCliSock.send(('FunEnd').encode())
+            print('STOP ALL FUNCTIONS')
 
         elif 'function_1_off' in data:
-            functionMode = 1
+            functionMode = 0
             SpiderG.steadyModeOff()
             tcpCliSock.send(('function_1_off').encode())
 
