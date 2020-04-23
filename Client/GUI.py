@@ -7,20 +7,15 @@
 # Author	  : William
 # Date		: 2018/08/22
 # 
-
+import cv2
+import zmq
+import base64
+import numpy as np
 from socket import *
 import sys
 import time
 import threading as thread
 import tkinter as tk
-
-try:#1
-	import cv2
-	import zmq
-	import base64
-	import numpy as np
-except:
-	print("Couldn't import OpenCV, you need to install it first.")
 
 ip_stu=1		#Shows connection status
 c_f_stu = 0
@@ -449,72 +444,8 @@ def set_B(event):
 	tcpClicSock.send(('wsB %s'%var_B.get()).encode())
 
 
-def EC_send(event):#z
-	tcpClicSock.send(('setEC %s'%var_ec.get()).encode())
-	time.sleep(0.03)
-
-
-def EC_default(event):#z
-	var_ec.set(0)
-	tcpClicSock.send(('defEC').encode())
-
-
-def scale_FL(x,y,w):#1
-	global Btn_CVFL
-	def lip1_send(event):
-		time.sleep(0.03)
-		tcpClicSock.send(('lip1 %s'%var_lip1.get()).encode())
-
-	def lip2_send(event):
-		time.sleep(0.03)
-		tcpClicSock.send(('lip2 %s'%var_lip2.get()).encode())
-
-	def err_send(event):
-		time.sleep(0.03)
-		tcpClicSock.send(('err %s'%var_err.get()).encode())
-
-	def call_Render(event):
-		tcpClicSock.send(('Render').encode())
-
-	def call_CVFL(event):
-		tcpClicSock.send(('CVFL').encode())
-
-	def call_WB(event):
-		tcpClicSock.send(('WBswitch').encode())
-
-	Scale_lip1 = tk.Scale(root,label=None,
-	from_=0,to=480,orient=tk.HORIZONTAL,length=w,
-	showvalue=1,tickinterval=None,resolution=1,variable=var_lip1,troughcolor='#212121',command=lip1_send,fg=color_text,bg=color_bg,highlightthickness=0)
-	Scale_lip1.place(x=x,y=y)							#Define a Scale and put it in position
-
-	Scale_lip2 = tk.Scale(root,label=None,
-	from_=0,to=480,orient=tk.HORIZONTAL,length=w,
-	showvalue=1,tickinterval=None,resolution=1,variable=var_lip2,troughcolor='#212121',command=lip2_send,fg=color_text,bg=color_bg,highlightthickness=0)
-	Scale_lip2.place(x=x,y=y+30)						#Define a Scale and put it in position
-
-	Scale_err = tk.Scale(root,label=None,
-	from_=0,to=200,orient=tk.HORIZONTAL,length=w,
-	showvalue=1,tickinterval=None,resolution=1,variable=var_err,troughcolor='#212121',command=err_send,fg=color_text,bg=color_bg,highlightthickness=0)
-	Scale_err.place(x=x,y=y+60)							#Define a Scale and put it in position
-
-	canvas_cover=tk.Canvas(root,bg=color_bg,height=30,width=510,highlightthickness=0)
-	canvas_cover.place(x=x,y=y+90)
-
-	Btn_Render = tk.Button(root, width=10, text='Render',fg=color_text,bg=color_btn,relief='ridge')
-	Btn_Render.place(x=x+w+111,y=y+20)
-	Btn_Render.bind('<ButtonPress-1>', call_Render)
-
-	Btn_CVFL = tk.Button(root, width=10, text='CV FL',fg=color_text,bg=color_btn,relief='ridge')
-	Btn_CVFL.place(x=x+w+21,y=y+20)
-	Btn_CVFL.bind('<ButtonPress-1>', call_CVFL)
-
-	Btn_WB = tk.Button(root, width=23, text='LineColorSwitch',fg=color_text,bg=color_btn,relief='ridge')
-	Btn_WB.place(x=x+w+21,y=y+60)
-	Btn_WB.bind('<ButtonPress-1>', call_WB)
-
-
 def loop():					  #GUI
-	global tcpClicSock,root,E1,connect,l_ip_4,l_ip_5,color_btn,color_text,Btn14,CPU_TEP_lab,CPU_USE_lab,RAM_lab,canvas_ultra,color_text,var_R,var_B,var_G,Btn_Steady,Btn_FindColor,Btn_WatchDog,Btn_Fun4,Btn_Fun5,Btn_Fun6,Btn_Switch_1,Btn_Switch_2,Btn_Switch_3,Btn_Smooth,var_lip1,var_lip2,var_err,color_bg,var_ec   #The value of tcpClicSock changes in the function loop(),would also changes in global so the other functions could use it.
+	global tcpClicSock,root,E1,connect,l_ip_4,l_ip_5,color_btn,color_text,Btn14,CPU_TEP_lab,CPU_USE_lab,RAM_lab,canvas_ultra,color_text,var_R,var_B,var_G,Btn_Steady,Btn_FindColor,Btn_WatchDog,Btn_Fun4,Btn_Fun5,Btn_Fun6,Btn_Switch_1,Btn_Switch_2,Btn_Switch_3,Btn_Smooth   #The value of tcpClicSock changes in the function loop(),would also changes in global so the other functions could use it.
 	while True:
 		color_bg='#000000'		#Set background color
 		color_text='#E1F5FE'	  #Set text color
@@ -526,7 +457,7 @@ def loop():					  #GUI
 
 		root = tk.Tk()			#Define a window named root
 		root.title('Adeept DarkPaw')	  #Main window title
-		root.geometry('565x680')  #Main window size, middle of the English letter x.
+		root.geometry('565x510')  #Main window size, middle of the English letter x.
 		root.config(bg=color_bg)  #Set the background color of root window
 
 		try:
@@ -655,13 +586,6 @@ def loop():					  #GUI
 
 		root.bind('<Return>', connect)
 
-		var_lip1 = tk.StringVar()#1
-		var_lip1.set(440)
-		var_lip2 = tk.StringVar()
-		var_lip2.set(380)
-		var_err = tk.StringVar()
-		var_err.set(20)
-
 		var_R = tk.StringVar()
 		var_R.set(0)
 
@@ -685,21 +609,6 @@ def loop():					  #GUI
 		from_=0,to=255,orient=tk.HORIZONTAL,length=505,
 		showvalue=1,tickinterval=None,resolution=1,variable=var_B,troughcolor='#448AFF',command=set_B,fg=color_text,bg=color_bg,highlightthickness=0)
 		Scale_B.place(x=30,y=390)							#Define a Scale and put it in position
-
-		var_ec = tk.StringVar() #Z start
-		var_ec.set(0)			
-
-		Scale_ExpCom = tk.Scale(root,label='Exposure Compensation Level',
-		from_=-25,to=25,orient=tk.HORIZONTAL,length=315,
-		showvalue=1,tickinterval=None,resolution=1,variable=var_ec,troughcolor='#212121',command=EC_send,fg=color_text,bg=color_bg,highlightthickness=0)
-		Scale_ExpCom.place(x=30,y=610)							#Define a Scale and put it in position
-
-		canvas_cover_exp=tk.Canvas(root,bg=color_bg,height=30,width=510,highlightthickness=0)
-		canvas_cover_exp.place(x=30,y=610+50)
-
-		Btn_dEC = tk.Button(root, width=23,height=2, text='Set Default Exposure\nCompensation Level',fg=color_text,bg=color_btn,relief='ridge')
-		Btn_dEC.place(x=30+315+21,y=610+3)
-		Btn_dEC.bind('<ButtonPress-1>', EC_default)	#Z end
 
 		canvas_cover=tk.Canvas(root,bg=color_bg,height=30,width=510,highlightthickness=0)
 		canvas_cover.place(x=30,y=420)
@@ -733,8 +642,6 @@ def loop():					  #GUI
 		Btn_Fun6.place(x=455,y=445)
 		root.bind('<KeyPress-z>', call_WatchDog)
 		Btn_Fun6.bind('<ButtonPress-1>', call_WatchDog)
-
-		scale_FL(30,490,315)#1
 
 		global stat
 		if stat==0:			  # Ensure the mainloop runs only once
