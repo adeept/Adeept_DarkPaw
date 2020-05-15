@@ -65,21 +65,21 @@ HRE_port = 11
 P_port = 12
 T_port = 13
 
-FLB_init_pwm = 300
-FLM_init_pwm = 300
-FLE_init_pwm = 300
+FLB_init_pwm = 313
+FLM_init_pwm = 305
+FLE_init_pwm = 313
 
-FRB_init_pwm = 300
-FRM_init_pwm = 300
-FRE_init_pwm = 300
+FRB_init_pwm = 325
+FRM_init_pwm = 281
+FRE_init_pwm = 301
 
-HLB_init_pwm = 300
-HLM_init_pwm = 300
-HLE_init_pwm = 300
+HLB_init_pwm = 312
+HLM_init_pwm = 287
+HLE_init_pwm = 260
 
-HRB_init_pwm = 300
-HRM_init_pwm = 300
-HRE_init_pwm = 300
+HRB_init_pwm = 305
+HRM_init_pwm = 195
+HRE_init_pwm = 340
 
 P_init_pwm   = 300
 T_init_pwm   = 300
@@ -604,8 +604,8 @@ def steady():
 				#X_error = X_pid.GenOut(X_steady-X)
 				#Y_error = Y_pid.GenOut(Y_steady-Y)
 
-				X_error = X_steady-X
-				Y_error = Y_steady-Y
+				X_error = X-X_steady
+				Y_error = Y-Y_steady
 
 				if abs(X_error)>mpu_tor or abs(Y_error)>mpu_tor:
 					status_GenOut(0, X_error*P, Y_error*P)
