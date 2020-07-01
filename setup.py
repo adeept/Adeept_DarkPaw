@@ -54,6 +54,18 @@ for x in range(1,4):
 		break
 
 for x in range(1,4):
+	if os.system("sudo pip3 install flask") == 0:
+		break
+
+for x in range(1,4):
+	if os.system("sudo pip3 install flask_cors") == 0:
+		break
+
+for x in range(1,4):
+	if os.system("sudo pip3 install websockets") == 0:
+		break
+		
+for x in range(1,4):
 	if os.system("sudo pip3 install rpi_ws281x") == 0:
 		break
 
