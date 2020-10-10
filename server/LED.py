@@ -46,4 +46,13 @@ class LED:
 
 if __name__ == '__main__':
     led = LED()
-    led.colorWipe(0,0,255)
+    try:  
+        while True:  
+            led.colorWipe(255, 0, 0)  # red
+            time.sleep(1)  
+            led.colorWipe(0, 255, 0)  # green
+            time.sleep(1)  
+            led.colorWipe(0, 0, 255)  # blue
+            time.sleep(1) 
+    except:  
+        led.colorWipe(0,0,0)  # Lights out
