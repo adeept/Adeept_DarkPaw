@@ -68,7 +68,7 @@ def replace_num(initial,new_num):   #Call this function to replace data in '.txt
 
 
 def ap_thread():
-    os.system("sudo create_ap wlan0 eth0 Groovy 12345678")
+    os.system("sudo create_ap wlan0 eth0 AdeeptRobot 12345678")
 
 
 def functionSelect(command_input, response):
@@ -263,6 +263,7 @@ def configPWM(command_input, response):
         if numServo == 0:
             FLB_init_pwm += 1
             SpiderG.FLB_init_pwm = FLB_init_pwm
+            print(SpiderG.FLB_init_pwm)
         elif numServo == 1:
             FLM_init_pwm += 1
             SpiderG.FLM_init_pwm = FLM_init_pwm
@@ -541,6 +542,7 @@ async def recv_msg(websocket):
         elif(isinstance(data,dict)):
             if data['title'] == "findColorSet":
                 color = data['data']
+                print("test:%d",%color)
                 flask_app.colorFindSet(color[0],color[1],color[2])
 
         print(data)
