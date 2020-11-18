@@ -6,6 +6,7 @@
 # Date        : 2018/08/22
 
 import RPi.GPIO as GPIO
+import time
 
 def switchSetup():
     GPIO.setwarnings(False)
@@ -43,3 +44,20 @@ def set_all_switch_off():
     switch(1,0)
     switch(2,0)
     switch(3,0)
+
+
+if __name__ == '__main__':
+    switchSetup()
+    try:
+        while 1:
+            switch(1,1)
+            switch(2,1)
+            switch(3,1)
+            print("Light on....")
+            time.sleep(1)
+            set_all_switch_off()
+            print("Light off....")
+            time.sleep(1)
+    except:
+        set_all_switch_off()
+    
