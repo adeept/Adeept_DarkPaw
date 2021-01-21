@@ -1,7 +1,7 @@
-#!/usr/bin/env/python
+#!/usr/bin/env/python3
+#！coding=utf-8
 # File name   : switch.py
 # Production  : HAT
-# Website     : www.gewbot.com
 # Author      : William
 # Date        : 2018/08/22
 
