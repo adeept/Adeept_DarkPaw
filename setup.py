@@ -50,6 +50,10 @@ for x in range(1,4):
 		break
 
 for x in range(1,4):
+	if os.system("sudo apt-get install -y python3-opencv") == 0:
+		break
+
+for x in range(1,4):
 	if os.system("sudo pip3 install adafruit-pca9685") == 0:
 		break
 
@@ -85,10 +89,6 @@ except:
 
 for x in range(1,4):
 	if os.system("sudo pip3 install numpy") == 0:
-		break
-
-for x in range(1,4):
-	if os.system("sudo pip3 install opencv-contrib-python==3.4.3.18") == 0:
 		break
 
 for x in range(1,4):
