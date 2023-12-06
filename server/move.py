@@ -15,10 +15,13 @@ import PID
 pwm = Adafruit_PCA9685.PCA9685()
 pwm.set_pwm_freq(50)
 
-for i in range(0,16):
-	exec('pwm%d=300'%i)
-	exec('pwm%d_max=450'%i)
-	exec('pwm%d_min=150'%i)
+# Number of PWM channels
+num_pwm_channels = 11
+
+# Initialize lists for PWM values
+pwm_values = [300] * num_pwm_channels
+pwm_max_values = [450] * num_pwm_channels
+pwm_min_values = [150] * num_pwm_channels
 
 '''
 Leg_I   --- forward --- Leg_III
@@ -90,52 +93,52 @@ def leg_move_diagonal(name, pos, wiggle):
 			 2--3--4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(0, 0, pwm0) #<back&forth>
-				pwm.set_pwm(1, 0, pwm1-wiggle) #<up>&down
-				pwm.set_pwm(2, 0, pwm2-max_wiggle) #<out>&in
+				pwm.set_pwm(0, 0, pwm_values[0]) #<back&forth>
+				pwm.set_pwm(1, 0, pwm_values[1]-wiggle) #<up>&down
+				pwm.set_pwm(2, 0, pwm_values[2]-max_wiggle) #<out>&in
 			else:
-				pwm.set_pwm(0, 0, pwm0) #<back&forth>
-				pwm.set_pwm(1, 0, pwm1+wiggle) #<up>&down
-				pwm.set_pwm(2, 0, pwm2+max_wiggle) #<out>&in		
+				pwm.set_pwm(0, 0, pwm_values[0]) #<back&forth>
+				pwm.set_pwm(1, 0, pwm_values[1]+wiggle) #<up>&down
+				pwm.set_pwm(2, 0, pwm_values[2]+max_wiggle) #<out>&in		
 		elif pos == 2:
 			'''
 			    1
 			<2>-3--4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(0, 0, pwm0+wiggle) #back&<forth>
-				pwm.set_pwm(1, 0, pwm1+wiggle) #up&<down>
-				pwm.set_pwm(2, 0, pwm2-reach_wiggle) #<out>&in
+				pwm.set_pwm(0, 0, pwm_values[0]+wiggle) #back&<forth>
+				pwm.set_pwm(1, 0, pwm_values[1]+wiggle) #up&<down>
+				pwm.set_pwm(2, 0, pwm_values[2]-reach_wiggle) #<out>&in
 			else:
-				pwm.set_pwm(0, 0, pwm0-wiggle) #back&<forth>
-				pwm.set_pwm(1, 0, pwm1-wiggle) #up&<down>
-				pwm.set_pwm(2, 0, pwm2+reach_wiggle) #<out>&in
+				pwm.set_pwm(0, 0, pwm_values[0]-wiggle) #back&<forth>
+				pwm.set_pwm(1, 0, pwm_values[1]-wiggle) #up&<down>
+				pwm.set_pwm(2, 0, pwm_values[2]+reach_wiggle) #<out>&in
 		elif pos == 3:
 			'''
 			    1
 			 2-<3>-4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(0, 0, pwm0) #<back&forth>
-				pwm.set_pwm(1, 0, pwm1+int(wiggle/2)) #<up&down>
-				pwm.set_pwm(2, 0, pwm2-int(reach_wiggle/2)) #<out&in>
+				pwm.set_pwm(0, 0, pwm_values[0]) #<back&forth>
+				pwm.set_pwm(1, 0, pwm_values[1]+int(wiggle/2)) #<up&down>
+				pwm.set_pwm(2, 0, pwm_values[2]-int(reach_wiggle/2)) #<out&in>
 			else:
-				pwm.set_pwm(0, 0, pwm0) #<back&forth>
-				pwm.set_pwm(1, 0, pwm1-int(wiggle/2)) #<up&down>
-				pwm.set_pwm(2, 0, pwm2+int(reach_wiggle/2)) #<out&in>
+				pwm.set_pwm(0, 0, pwm_values[0]) #<back&forth>
+				pwm.set_pwm(1, 0, pwm_values[1]-int(wiggle/2)) #<up&down>
+				pwm.set_pwm(2, 0, pwm_values[2]+int(reach_wiggle/2)) #<out&in>
 		elif pos == 4:
 			'''
 			    1
 			 2--3-<4>
 			'''
 			if Set_Direction:
-				pwm.set_pwm(0, 0, pwm0-wiggle) #<back>&forth
-				pwm.set_pwm(1, 0, pwm1+int(wiggle/4)) #up&<down>
-				pwm.set_pwm(2, 0, pwm2) #out&<in>
+				pwm.set_pwm(0, 0, pwm_values[0]-wiggle) #<back>&forth
+				pwm.set_pwm(1, 0, pwm_values[1]+int(wiggle/4)) #up&<down>
+				pwm.set_pwm(2, 0, pwm_values[2]) #out&<in>
 			else:
-				pwm.set_pwm(0, 0, pwm0+wiggle) #<back&forth>
-				pwm.set_pwm(1, 0, pwm1-int(wiggle/4)) #up&<down>
-				pwm.set_pwm(2, 0, pwm2) #out&<in>
+				pwm.set_pwm(0, 0, pwm_values[0]+wiggle) #<back&forth>
+				pwm.set_pwm(1, 0, pwm_values[1]-int(wiggle/4)) #up&<down>
+				pwm.set_pwm(2, 0, pwm_values[2]) #out&<in>
 
 	elif name == 'II':
 		if pos == 1:
@@ -144,52 +147,52 @@ def leg_move_diagonal(name, pos, wiggle):
 			 2--3--4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(3, 0, pwm3) #<back&forth>
-				pwm.set_pwm(4, 0, pwm4+wiggle) #<up>&down
-				pwm.set_pwm(5, 0, pwm5+max_wiggle) #<out>&in
+				pwm.set_pwm(3, 0, pwm_values[3]) #<back&forth>
+				pwm.set_pwm(4, 0, pwm_values[4]+wiggle) #<up>&down
+				pwm.set_pwm(5, 0, pwm_values[5]+max_wiggle) #<out>&in
 			else:
-				pwm.set_pwm(3, 0, pwm3) #<back&forth>
-				pwm.set_pwm(4, 0, pwm4+wiggle) #<up>&down
-				pwm.set_pwm(5, 0, pwm5-max_wiggle) #<out>&in		
+				pwm.set_pwm(3, 0, pwm_values[3]) #<back&forth>
+				pwm.set_pwm(4, 0, pwm_values[4]+wiggle) #<up>&down
+				pwm.set_pwm(5, 0, pwm_values[5]-max_wiggle) #<out>&in		
 		elif pos == 2:
 			'''
 			    1
 			<2>-3--4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(3, 0, pwm3-wiggle) #back&<forth>
-				pwm.set_pwm(4, 0, pwm4-int(wiggle/4)) #<up&down>
-				pwm.set_pwm(5, 0, pwm5) #out&<in>
+				pwm.set_pwm(3, 0, pwm_values[3]-wiggle) #back&<forth>
+				pwm.set_pwm(4, 0, pwm_values[4]-int(wiggle/4)) #<up&down>
+				pwm.set_pwm(5, 0, pwm_values[5]) #out&<in>
 			else:
-				pwm.set_pwm(3, 0, pwm3+wiggle) #back&<forth>
-				pwm.set_pwm(4, 0, pwm4+int(wiggle/4)) #up&<down>
-				pwm.set_pwm(5, 0, pwm5) #<out>&in
+				pwm.set_pwm(3, 0, pwm_values[3]+wiggle) #back&<forth>
+				pwm.set_pwm(4, 0, pwm_values[4]+int(wiggle/4)) #up&<down>
+				pwm.set_pwm(5, 0, pwm_values[5]) #<out>&in
 		elif pos == 3:
 			'''
 			    1
 			 2-<3>-4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(3, 0, pwm3) #<back&forth>
-				pwm.set_pwm(4, 0, pwm4-int(wiggle/2)) #<up&down>
-				pwm.set_pwm(5, 0, pwm5+int(reach_wiggle/2)) #<out&in>
+				pwm.set_pwm(3, 0, pwm_values[3]) #<back&forth>
+				pwm.set_pwm(4, 0, pwm_values[4]-int(wiggle/2)) #<up&down>
+				pwm.set_pwm(5, 0, pwm_values[5]+int(reach_wiggle/2)) #<out&in>
 			else:
-				pwm.set_pwm(3, 0, pwm3) #<back&forth>
-				pwm.set_pwm(4, 0, pwm4+int(wiggle/2)) #<up&down>
-				pwm.set_pwm(5, 0, pwm5-int(reach_wiggle/2)) #<out&in>
+				pwm.set_pwm(3, 0, pwm_values[3]) #<back&forth>
+				pwm.set_pwm(4, 0, pwm_values[4]+int(wiggle/2)) #<up&down>
+				pwm.set_pwm(5, 0, pwm_values[5]-int(reach_wiggle/2)) #<out&in>
 		elif pos == 4:
 			'''
 			    1
 			 2--3-<4>
 			'''
 			if Set_Direction:
-				pwm.set_pwm(3, 0, pwm3+wiggle) #<back>&forth
-				pwm.set_pwm(4, 0, pwm4-wiggle) #up&<down>
-				pwm.set_pwm(5, 0, pwm5+reach_wiggle) #out&<in>
+				pwm.set_pwm(3, 0, pwm_values[3]+wiggle) #<back>&forth
+				pwm.set_pwm(4, 0, pwm_values[4]-wiggle) #up&<down>
+				pwm.set_pwm(5, 0, pwm_values[5]+reach_wiggle) #out&<in>
 			else:
-				pwm.set_pwm(3, 0, pwm3-wiggle) #<back&forth>
-				pwm.set_pwm(4, 0, pwm4+wiggle) #up&<down>
-				pwm.set_pwm(5, 0, pwm5-reach_wiggle) #out&<in>
+				pwm.set_pwm(3, 0, pwm_values[3]-wiggle) #<back&forth>
+				pwm.set_pwm(4, 0, pwm_values[4]+wiggle) #up&<down>
+				pwm.set_pwm(5, 0, pwm_values[5]-reach_wiggle) #out&<in>
 
 	elif name == 'III':
 		if pos == 1:
@@ -198,52 +201,52 @@ def leg_move_diagonal(name, pos, wiggle):
 			 2--3--4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(6, 0, pwm6) #<back&forth>
-				pwm.set_pwm(7, 0, pwm7+wiggle) #<up>&down
-				pwm.set_pwm(8, 0, pwm8+max_wiggle) #<out>&in
+				pwm.set_pwm(6, 0, pwm_values[6]) #<back&forth>
+				pwm.set_pwm(7, 0, pwm_values[7]+wiggle) #<up>&down
+				pwm.set_pwm(8, 0, pwm_values[8]+max_wiggle) #<out>&in
 			else:
-				pwm.set_pwm(6, 0, pwm6) #<back&forth>
-				pwm.set_pwm(7, 0, pwm7-wiggle) #<up>&down
-				pwm.set_pwm(8, 0, pwm8-reach_wiggle) #<out>&in		
+				pwm.set_pwm(6, 0, pwm_values[6]) #<back&forth>
+				pwm.set_pwm(7, 0, pwm_values[7]-wiggle) #<up>&down
+				pwm.set_pwm(8, 0, pwm_values[8]-reach_wiggle) #<out>&in		
 		elif pos == 2:
 			'''
 			    1
 			<2>-3--4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(6, 0, pwm6-wiggle) #back&<forth>
-				pwm.set_pwm(7, 0, pwm7-wiggle) #up&<down>
-				pwm.set_pwm(8, 0, pwm8+reach_wiggle) #<out>&in
+				pwm.set_pwm(6, 0, pwm_values[6]-wiggle) #back&<forth>
+				pwm.set_pwm(7, 0, pwm_values[7]-wiggle) #up&<down>
+				pwm.set_pwm(8, 0, pwm_values[8]+reach_wiggle) #<out>&in
 			else:
-				pwm.set_pwm(6, 0, pwm6+wiggle) #back&<forth>
-				pwm.set_pwm(7, 0, pwm7+wiggle) #up&<down>
-				pwm.set_pwm(8, 0, pwm8-reach_wiggle) #<out>&in
+				pwm.set_pwm(6, 0, pwm_values[6]+wiggle) #back&<forth>
+				pwm.set_pwm(7, 0, pwm_values[7]+wiggle) #up&<down>
+				pwm.set_pwm(8, 0, pwm_values[8]-reach_wiggle) #<out>&in
 		elif pos == 3:
 			'''
 			    1
 			 2-<3>-4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(6, 0, pwm6) #<back&forth>
-				pwm.set_pwm(7, 0, pwm7-int(wiggle/2)) #<up&down>
-				pwm.set_pwm(8, 0, pwm8+int(reach_wiggle/2)) #<out&in>
+				pwm.set_pwm(6, 0, pwm_values[6]) #<back&forth>
+				pwm.set_pwm(7, 0, pwm_values[7]-int(wiggle/2)) #<up&down>
+				pwm.set_pwm(8, 0, pwm_values[8]+int(reach_wiggle/2)) #<out&in>
 			else:
-				pwm.set_pwm(6, 0, pwm6) #<back&forth>
-				pwm.set_pwm(7, 0, pwm7+int(wiggle/2)) #<up&down>
-				pwm.set_pwm(8, 0, pwm8-int(reach_wiggle/2)) #<out&in>
+				pwm.set_pwm(6, 0, pwm_values[6]) #<back&forth>
+				pwm.set_pwm(7, 0, pwm_values[7]+int(wiggle/2)) #<up&down>
+				pwm.set_pwm(8, 0, pwm_values[8]-int(reach_wiggle/2)) #<out&in>
 		elif pos == 4:
 			'''
 			    1
 			 2--3-<4>
 			'''
 			if Set_Direction:
-				pwm.set_pwm(6, 0, pwm6+wiggle) #<back>&forth
-				pwm.set_pwm(7, 0, pwm7-int(wiggle/4)) #up&<down>
-				pwm.set_pwm(8, 0, pwm8) #out&<in>
+				pwm.set_pwm(6, 0, pwm_values[6]+wiggle) #<back>&forth
+				pwm.set_pwm(7, 0, pwm_values[7]-int(wiggle/4)) #up&<down>
+				pwm.set_pwm(8, 0, pwm_values[8]) #out&<in>
 			else:
-				pwm.set_pwm(6, 0, pwm6-wiggle) #<back&forth>
-				pwm.set_pwm(7, 0, pwm7+int(wiggle/4)) #up&<down>
-				pwm.set_pwm(8, 0, pwm8) #out&<in>
+				pwm.set_pwm(6, 0, pwm_values[6]-wiggle) #<back&forth>
+				pwm.set_pwm(7, 0, pwm_values[7]+int(wiggle/4)) #up&<down>
+				pwm.set_pwm(8, 0, pwm_values[8]) #out&<in>
 
 	elif name == 'IV':
 		if pos == 1:
@@ -252,52 +255,52 @@ def leg_move_diagonal(name, pos, wiggle):
 			 2--3--4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(9, 0, pwm9) #<back&forth>
-				pwm.set_pwm(10, 0, pwm10-wiggle) #<up>&down
-				pwm.set_pwm(11, 0, pwm11-max_wiggle) #<out>&in
+				pwm.set_pwm(9, 0, pwm_values[9]) #<back&forth>
+				pwm.set_pwm(10, 0, pwm_values[10]-wiggle) #<up>&down
+				pwm.set_pwm(11, 0, pwm_values[11]-max_wiggle) #<out>&in
 			else:
-				pwm.set_pwm(9, 0, pwm9) #<back&forth>
-				pwm.set_pwm(10, 0, pwm10+wiggle) #<up>&down
-				pwm.set_pwm(11, 0, pwm11+max_wiggle) #<out>&in		
+				pwm.set_pwm(9, 0, pwm_values[9]) #<back&forth>
+				pwm.set_pwm(10, 0, pwm_values[10]+wiggle) #<up>&down
+				pwm.set_pwm(11, 0, pwm_values[11]+max_wiggle) #<out>&in		
 		elif pos == 2:
 			'''
 			    1
 			<2>-3--4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(9, 0, pwm9+wiggle) #back&<forth>
-				pwm.set_pwm(10, 0, pwm10+int(wiggle/4)) #up&<down>
-				pwm.set_pwm(11, 0, pwm11) #<out>&in
+				pwm.set_pwm(9, 0, pwm_values[9]+wiggle) #back&<forth>
+				pwm.set_pwm(10, 0, pwm_values[10]+int(wiggle/4)) #up&<down>
+				pwm.set_pwm(11, 0, pwm_values[11]) #<out>&in
 			else:
-				pwm.set_pwm(9, 0, pwm9-wiggle) #back&<forth>
-				pwm.set_pwm(10, 0, pwm10-int(wiggle/4)) #up&<down>
-				pwm.set_pwm(11, 0, pwm11) #<out>&in
+				pwm.set_pwm(9, 0, pwm_values[9]-wiggle) #back&<forth>
+				pwm.set_pwm(10, 0, pwm_values[10]-int(wiggle/4)) #up&<down>
+				pwm.set_pwm(11, 0, pwm_values[11]) #<out>&in
 		elif pos == 3:
 			'''
 			    1
 			 2-<3>-4
 			'''
 			if Set_Direction:
-				pwm.set_pwm(9, 0, pwm9) #<back&forth>
-				pwm.set_pwm(10, 0, pwm10+int(wiggle/2)) #<up&down>
-				pwm.set_pwm(11, 0, pwm11-int(reach_wiggle/2)) #<out&in>
+				pwm.set_pwm(9, 0, pwm_values[9]) #<back&forth>
+				pwm.set_pwm(10, 0, pwm_values[10]+int(wiggle/2)) #<up&down>
+				pwm.set_pwm(11, 0, pwm_values[11]-int(reach_wiggle/2)) #<out&in>
 			else:
-				pwm.set_pwm(9, 0, pwm9) #<back&forth>
-				pwm.set_pwm(10, 0, pwm10-int(wiggle/2)) #<up&down>
-				pwm.set_pwm(11, 0, pwm11+int(reach_wiggle/2)) #<out&in>
+				pwm.set_pwm(9, 0, pwm_values[9]) #<back&forth>
+				pwm.set_pwm(10, 0, pwm_values[10]-int(wiggle/2)) #<up&down>
+				pwm.set_pwm(11, 0, pwm_values[11]+int(reach_wiggle/2)) #<out&in>
 		elif pos == 4:
 			'''
 			    1
 			 2--3-<4>
 			'''
 			if Set_Direction:
-				pwm.set_pwm(9, 0, pwm9-wiggle) #<back>&forth
-				pwm.set_pwm(10, 0, pwm10+wiggle) #up&<down>
-				pwm.set_pwm(11, 0, pwm11-reach_wiggle) #<out>&in
+				pwm.set_pwm(9, 0, pwm_values[9]-wiggle) #<back>&forth
+				pwm.set_pwm(10, 0, pwm_values[10]+wiggle) #up&<down>
+				pwm.set_pwm(11, 0, pwm_values[11]-reach_wiggle) #<out>&in
 			else:
-				pwm.set_pwm(9, 0, pwm9+wiggle) #<back&forth>
-				pwm.set_pwm(10, 0, pwm10-wiggle) #up&<down>
-				pwm.set_pwm(11, 0, pwm11+reach_wiggle) #<out>&in
+				pwm.set_pwm(9, 0, pwm_values[9]+wiggle) #<back&forth>
+				pwm.set_pwm(10, 0, pwm_values[10]-wiggle) #up&<down>
+				pwm.set_pwm(11, 0, pwm_values[11]+reach_wiggle) #<out>&in
 
 	else:
 		print("the names of the legs is 'I II III IV")
@@ -346,17 +349,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(0, 0, int(pwm0-wiggle+increase*wiggle))
+				pwm.set_pwm(0, 0, int(pwm_values[0]-wiggle+increase*wiggle))
 
-				pwm.set_pwm(1, 0, int(pwm1+wiggle/4-(increase*wiggle*5/4)))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+wiggle/4-(increase*wiggle*5/4)))
 
-				pwm.set_pwm(2, 0, int(pwm2-increase*max_wiggle))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-increase*max_wiggle))
 			else:
-				pwm.set_pwm(0, 0, int(pwm0+wiggle-increase*wiggle))
+				pwm.set_pwm(0, 0, int(pwm_values[0]+wiggle-increase*wiggle))
 
-				pwm.set_pwm(1, 0, int(pwm1+wiggle-2*increase*wiggle))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+wiggle-2*increase*wiggle))
 
-				pwm.set_pwm(2, 0, int(pwm2-reach_wiggle-increase*(max_wiggle-reach_wiggle)))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-reach_wiggle-increase*(max_wiggle-reach_wiggle)))
 				pass
 
 		elif pos == 2:
@@ -365,17 +368,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			<2>-3--4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(0, 0, int(pwm0+increase*wiggle))
+				pwm.set_pwm(0, 0, int(pwm_values[0]+increase*wiggle))
 
-				pwm.set_pwm(1, 0, int(pwm1-wiggle+increase*wiggle*2))
+				pwm.set_pwm(1, 0, int(pwm_values[1]-wiggle+increase*wiggle*2))
 
-				pwm.set_pwm(2, 0, int(pwm2-max_wiggle+increase*(max_wiggle-reach_wiggle)))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-max_wiggle+increase*(max_wiggle-reach_wiggle)))
 			else:
-				pwm.set_pwm(0, 0, int(pwm0-increase*wiggle))
+				pwm.set_pwm(0, 0, int(pwm_values[0]-increase*wiggle))
 
-				pwm.set_pwm(1, 0, int(pwm1-wiggle+5*increase*wiggle/4))
+				pwm.set_pwm(1, 0, int(pwm_values[1]-wiggle+5*increase*wiggle/4))
 
-				pwm.set_pwm(2, 0, int(pwm2-max_wiggle+increase*max_wiggle))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-max_wiggle+increase*max_wiggle))
 				pass
 
 		elif pos == 3:
@@ -384,17 +387,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2-<3>-4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(0, 0, int(pwm0+wiggle-increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]+wiggle-increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+wiggle-increase*wiggle/6))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+wiggle-increase*wiggle/6))
 
-				pwm.set_pwm(2, 0, int(pwm2-reach_wiggle+increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-reach_wiggle+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(0, 0, int(pwm0-wiggle+increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]-wiggle+increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+wiggle/4+increase*wiggle/12))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+wiggle/4+increase*wiggle/12))
 
-				pwm.set_pwm(2, 0, int(pwm2-increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-increase*reach_wiggle/6))
 				pass
 
 		elif pos == 4:
@@ -403,17 +406,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3-<4>-5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(0, 0, int(pwm0+2*wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]+2*wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+5*wiggle/6-increase*wiggle/6))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+5*wiggle/6-increase*wiggle/6))
 
-				pwm.set_pwm(2, 0, int(pwm2-5*reach_wiggle/6+increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-5*reach_wiggle/6+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(0, 0, int(pwm0-2*wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]-2*wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+wiggle/3+increase*wiggle/12))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+wiggle/3+increase*wiggle/12))
 
-				pwm.set_pwm(2, 0, int(pwm2-reach_wiggle/6-increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-reach_wiggle/6-increase*reach_wiggle/6))
 				pass
 
 		elif pos == 5:
@@ -422,17 +425,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4-<5>-6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(0, 0, int(pwm0+wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]+wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+4*wiggle/6-increase*wiggle/6))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+4*wiggle/6-increase*wiggle/6))
 
-				pwm.set_pwm(2, 0, int(pwm2-2*reach_wiggle/3+increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-2*reach_wiggle/3+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(0, 0, int(pwm0-wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]-wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+5*wiggle/12+increase*wiggle/12))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+5*wiggle/12+increase*wiggle/12))
 
-				pwm.set_pwm(2, 0, int(pwm2-reach_wiggle/3-increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-reach_wiggle/3-increase*reach_wiggle/6))
 				pass
 
 		elif pos == 6:
@@ -441,17 +444,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5-<6>-7--8-
 			'''
 			if direction:
-				pwm.set_pwm(0, 0, int(pwm0-increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]-increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+wiggle/2-wiggle/12))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+wiggle/2-wiggle/12))
 
-				pwm.set_pwm(2, 0, int(pwm2-reach_wiggle/2+increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-reach_wiggle/2+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(0, 0, int(pwm0+increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]+increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+wiggle/2+increase*wiggle/6))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+wiggle/2+increase*wiggle/6))
 
-				pwm.set_pwm(2, 0, int(pwm2-reach_wiggle/2-increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-reach_wiggle/2-increase*reach_wiggle/6))
 				pass
 
 		elif pos == 7:
@@ -460,17 +463,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6-<7>-8-
 			'''
 			if direction:
-				pwm.set_pwm(0, 0, int(pwm0-wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]-wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+5*wiggle/12-increase*wiggle/12))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+5*wiggle/12-increase*wiggle/12))
 
-				pwm.set_pwm(2, 0, int(pwm2-2*reach_wiggle/6+increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-2*reach_wiggle/6+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(0, 0, int(pwm0+wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]+wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+2*wiggle/3+increase*wiggle/6))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+2*wiggle/3+increase*wiggle/6))
 
-				pwm.set_pwm(2, 0, int(pwm2-2*reach_wiggle/3-increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-2*reach_wiggle/3-increase*reach_wiggle/6))
 				pass
 
 		elif pos == 8:
@@ -479,17 +482,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6--7-<8>
 			'''
 			if direction:
-				pwm.set_pwm(0, 0, int(pwm0-2*wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]-2*wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+4*wiggle/12-wiggle/12))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+4*wiggle/12-wiggle/12))
 
-				pwm.set_pwm(2, 0, int(pwm2-reach_wiggle/6+increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-reach_wiggle/6+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(0, 0, int(pwm0+2*wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(0, 0, int(pwm_values[0]+2*wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(1, 0, int(pwm1+5*wiggle/6+increase*wiggle/6))
+				pwm.set_pwm(1, 0, int(pwm_values[1]+5*wiggle/6+increase*wiggle/6))
 
-				pwm.set_pwm(2, 0, int(pwm2-5*reach_wiggle/6-increase*reach_wiggle/6))
+				pwm.set_pwm(2, 0, int(pwm_values[2]-5*reach_wiggle/6-increase*reach_wiggle/6))
 				pass
 
 		else:
@@ -502,17 +505,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(3, 0, int(pwm3+wiggle-increase*wiggle))
+				pwm.set_pwm(3, 0, int(pwm_values[3]+wiggle-increase*wiggle))
 
-				pwm.set_pwm(4, 0, int(pwm4-wiggle+increase*wiggle*2))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-wiggle+increase*wiggle*2))
 
-				pwm.set_pwm(5, 0, int(pwm5+reach_wiggle+increase*(max_wiggle-reach_wiggle)))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+reach_wiggle+increase*(max_wiggle-reach_wiggle)))
 			else:
-				pwm.set_pwm(3, 0, int(pwm3-wiggle+increase*wiggle))
+				pwm.set_pwm(3, 0, int(pwm_values[3]-wiggle+increase*wiggle))
 
-				pwm.set_pwm(4, 0, int(pwm4-wiggle/4+5*increase*wiggle/4))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-wiggle/4+5*increase*wiggle/4))
 
-				pwm.set_pwm(5, 0, int(pwm5+increase*max_wiggle))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+increase*max_wiggle))
 				pass
 
 		elif pos == 2:
@@ -521,17 +524,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			<2>-3--4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(3, 0, int(pwm3-increase*wiggle))
+				pwm.set_pwm(3, 0, int(pwm_values[3]-increase*wiggle))
 
-				pwm.set_pwm(4, 0, int(pwm4+wiggle-5*increase*wiggle/4))
+				pwm.set_pwm(4, 0, int(pwm_values[4]+wiggle-5*increase*wiggle/4))
 
-				pwm.set_pwm(5, 0, int(pwm5+max_wiggle-increase*max_wiggle))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+max_wiggle-increase*max_wiggle))
 			else:
-				pwm.set_pwm(3, 0, int(pwm3+increase*wiggle))
+				pwm.set_pwm(3, 0, int(pwm_values[3]+increase*wiggle))
 
-				pwm.set_pwm(4, 0, int(pwm4+wiggle-2*increase*wiggle))
+				pwm.set_pwm(4, 0, int(pwm_values[4]+wiggle-2*increase*wiggle))
 
-				pwm.set_pwm(5, 0, int(pwm5+max_wiggle-increase*(max_wiggle-reach_wiggle)))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+max_wiggle-increase*(max_wiggle-reach_wiggle)))
 				pass
 
 		elif pos == 3:
@@ -540,17 +543,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2-<3>-4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(3, 0, int(pwm3-wiggle+increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]-wiggle+increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-wiggle/4-increase*wiggle/12))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-wiggle/4-increase*wiggle/12))
 
-				pwm.set_pwm(5, 0, int(pwm5+increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(3, 0, int(pwm3+wiggle-increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]+wiggle-increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-wiggle+increase*wiggle/6))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-wiggle+increase*wiggle/6))
 
-				pwm.set_pwm(5, 0, int(pwm5+reach_wiggle-increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+reach_wiggle-increase*reach_wiggle/6))
 				pass
 
 		elif pos == 4:
@@ -559,17 +562,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3-<4>-5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(3, 0, int(pwm3-2*wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]-2*wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-4*wiggle/12-increase*wiggle/12))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-4*wiggle/12-increase*wiggle/12))
 
-				pwm.set_pwm(5, 0, int(pwm5+reach_wiggle/6+increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+reach_wiggle/6+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(3, 0, int(pwm3+2*wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]+2*wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-5*wiggle/6+increase*wiggle/6))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-5*wiggle/6+increase*wiggle/6))
 
-				pwm.set_pwm(5, 0, int(pwm5+5*reach_wiggle/6-increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+5*reach_wiggle/6-increase*reach_wiggle/6))
 				pass
 
 		elif pos == 5:
@@ -578,17 +581,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4-<5>-6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(3, 0, int(pwm3-wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]-wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-5*wiggle/12-increase*wiggle/12))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-5*wiggle/12-increase*wiggle/12))
 
-				pwm.set_pwm(5, 0, int(pwm5+reach_wiggle/3+increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+reach_wiggle/3+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(3, 0, int(pwm3+wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]+wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-2*wiggle/3+increase*wiggle/6))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-2*wiggle/3+increase*wiggle/6))
 
-				pwm.set_pwm(5, 0, int(pwm5+2*reach_wiggle/3-increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+2*reach_wiggle/3-increase*reach_wiggle/6))
 				pass
 
 		elif pos == 6:
@@ -597,17 +600,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5-<6>-7--8-
 			'''
 			if direction:
-				pwm.set_pwm(3, 0, int(pwm3+increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]+increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-wiggle/2-increase*wiggle/6))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-wiggle/2-increase*wiggle/6))
 
-				pwm.set_pwm(5, 0, int(pwm5+reach_wiggle/2+increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+reach_wiggle/2+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(3, 0, int(pwm3-increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]-increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-wiggle/2+increase*wiggle/12))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-wiggle/2+increase*wiggle/12))
 
-				pwm.set_pwm(5, 0, int(pwm5+reach_wiggle/2-increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+reach_wiggle/2-increase*reach_wiggle/6))
 				pass
 
 		elif pos == 7:
@@ -616,17 +619,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6-<7>-8-
 			'''
 			if direction:
-				pwm.set_pwm(3, 0, int(pwm3+wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]+wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-4*wiggle/6-increase*wiggle/6))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-4*wiggle/6-increase*wiggle/6))
 
-				pwm.set_pwm(5, 0, int(pwm5+2*reach_wiggle/3+increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+2*reach_wiggle/3+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(3, 0, int(pwm3-wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]-wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-5*wiggle/12+increase*wiggle/12))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-5*wiggle/12+increase*wiggle/12))
 
-				pwm.set_pwm(5, 0, int(pwm5+reach_wiggle/3-increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+reach_wiggle/3-increase*reach_wiggle/6))
 				pass
 
 		elif pos == 8:
@@ -635,17 +638,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6--7-<8>
 			'''
 			if direction:
-				pwm.set_pwm(3, 0, int(pwm3+2*wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]+2*wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-5*wiggle/6-increase*wiggle/6))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-5*wiggle/6-increase*wiggle/6))
 
-				pwm.set_pwm(5, 0, int(pwm5+5*reach_wiggle/6+increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+5*reach_wiggle/6+increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(3, 0, int(pwm3-2*wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(3, 0, int(pwm_values[3]-2*wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(4, 0, int(pwm4-wiggle/3+increase*wiggle/12))
+				pwm.set_pwm(4, 0, int(pwm_values[4]-wiggle/3+increase*wiggle/12))
 
-				pwm.set_pwm(5, 0, int(pwm5+reach_wiggle/6-increase*reach_wiggle/6))
+				pwm.set_pwm(5, 0, int(pwm_values[5]+reach_wiggle/6-increase*reach_wiggle/6))
 				pass
 
 	elif name == 'III':
@@ -655,17 +658,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(6, 0, int(pwm6+wiggle-increase*wiggle))
+				pwm.set_pwm(6, 0, int(pwm_values[6]+wiggle-increase*wiggle))
 
-				pwm.set_pwm(7, 0, int(pwm7-wiggle/4+5*increase*wiggle/4))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-wiggle/4+5*increase*wiggle/4))
 
-				pwm.set_pwm(8, 0, int(pwm8+increase*max_wiggle))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+increase*max_wiggle))
 			else:
-				pwm.set_pwm(6, 0, int(pwm6-wiggle+increase*wiggle))
+				pwm.set_pwm(6, 0, int(pwm_values[6]-wiggle+increase*wiggle))
 
-				pwm.set_pwm(7, 0, int(pwm7-wiggle+2*increase*wiggle))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-wiggle+2*increase*wiggle))
 
-				pwm.set_pwm(8, 0, int(pwm8+reach_wiggle+increase*(max_wiggle-reach_wiggle)))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+reach_wiggle+increase*(max_wiggle-reach_wiggle)))
 				pass
 
 		elif pos == 2:
@@ -674,17 +677,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			<2>-3--4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(6, 0, int(pwm6-increase*wiggle))
+				pwm.set_pwm(6, 0, int(pwm_values[6]-increase*wiggle))
 
-				pwm.set_pwm(7, 0, int(pwm7+wiggle-2*increase*wiggle))
+				pwm.set_pwm(7, 0, int(pwm_values[7]+wiggle-2*increase*wiggle))
 
-				pwm.set_pwm(8, 0, int(pwm8+max_wiggle-increase*(max_wiggle-reach_wiggle)))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+max_wiggle-increase*(max_wiggle-reach_wiggle)))
 			else:
-				pwm.set_pwm(6, 0, int(pwm6+increase*wiggle))
+				pwm.set_pwm(6, 0, int(pwm_values[6]+increase*wiggle))
 
-				pwm.set_pwm(7, 0, int(pwm7+wiggle-5*increase*wiggle/4))
+				pwm.set_pwm(7, 0, int(pwm_values[7]+wiggle-5*increase*wiggle/4))
 
-				pwm.set_pwm(8, 0, int(pwm8+max_wiggle-increase*max_wiggle))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+max_wiggle-increase*max_wiggle))
 				pass
 
 		elif pos == 3:
@@ -693,17 +696,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2-<3>-4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(6, 0, int(pwm6-wiggle+increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]-wiggle+increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-wiggle+increase*wiggle/6))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-wiggle+increase*wiggle/6))
 
-				pwm.set_pwm(8, 0, int(pwm8+reach_wiggle-increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+reach_wiggle-increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(6, 0, int(pwm6+wiggle-increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]+wiggle-increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-wiggle/4-increase*wiggle/12))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-wiggle/4-increase*wiggle/12))
 
-				pwm.set_pwm(8, 0, int(pwm8+increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+increase*reach_wiggle/6))
 				pass
 
 		elif pos == 4:
@@ -712,17 +715,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3-<4>-5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(6, 0, int(pwm6-2*wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]-2*wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-5*wiggle/6+increase*wiggle/6))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-5*wiggle/6+increase*wiggle/6))
 
-				pwm.set_pwm(8, 0, int(pwm8+5*reach_wiggle/6-increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+5*reach_wiggle/6-increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(6, 0, int(pwm6+2*wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]+2*wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-wiggle/4-increase*wiggle/12))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-wiggle/4-increase*wiggle/12))
 
-				pwm.set_pwm(8, 0, int(pwm8+reach_wiggle/6+increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+reach_wiggle/6+increase*reach_wiggle/6))
 				pass
 
 		elif pos == 5:
@@ -731,17 +734,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4-<5>-6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(6, 0, int(pwm6-wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]-wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-2*wiggle/3+increase*wiggle/6))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-2*wiggle/3+increase*wiggle/6))
 
-				pwm.set_pwm(8, 0, int(pwm8+2*reach_wiggle/3-increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+2*reach_wiggle/3-increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(6, 0, int(pwm6+wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]+wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-5*wiggle/12-increase*wiggle/12))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-5*wiggle/12-increase*wiggle/12))
 
-				pwm.set_pwm(8, 0, int(pwm8+reach_wiggle/3+increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+reach_wiggle/3+increase*reach_wiggle/6))
 				pass
 
 		elif pos == 6:
@@ -750,17 +753,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5-<6>-7--8-
 			'''
 			if direction:
-				pwm.set_pwm(6, 0, int(pwm6+increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]+increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-wiggle/2+increase*wiggle/12))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-wiggle/2+increase*wiggle/12))
 
-				pwm.set_pwm(8, 0, int(pwm8+reach_wiggle/2-increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+reach_wiggle/2-increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(6, 0, int(pwm6-increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]-increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-wiggle/2-increase*wiggle/6))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-wiggle/2-increase*wiggle/6))
 
-				pwm.set_pwm(8, 0, int(pwm8+reach_wiggle/2+increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+reach_wiggle/2+increase*reach_wiggle/6))
 				pass
 
 		elif pos == 7:
@@ -769,17 +772,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6-<7>-8-
 			'''
 			if direction:
-				pwm.set_pwm(6, 0, int(pwm6+wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]+wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-5*wiggle/12+increase*wiggle/12))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-5*wiggle/12+increase*wiggle/12))
 
-				pwm.set_pwm(8, 0, int(pwm8+reach_wiggle/3-increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+reach_wiggle/3-increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(6, 0, int(pwm6-wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]-wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-2*wiggle/3-increase*wiggle/6))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-2*wiggle/3-increase*wiggle/6))
 
-				pwm.set_pwm(8, 0, int(pwm8+2*reach_wiggle/3+increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+2*reach_wiggle/3+increase*reach_wiggle/6))
 				pass
 
 		elif pos == 8:
@@ -788,17 +791,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6--7-<8>
 			'''
 			if direction:
-				pwm.set_pwm(6, 0, int(pwm6+2*wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]+2*wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-4*wiggle/12+increase*wiggle/12))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-4*wiggle/12+increase*wiggle/12))
 
-				pwm.set_pwm(8, 0, int(pwm8+reach_wiggle/6-increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+reach_wiggle/6-increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(6, 0, int(pwm6-2*wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(6, 0, int(pwm_values[6]-2*wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(7, 0, int(pwm7-5*wiggle/6-increase*wiggle/6))
+				pwm.set_pwm(7, 0, int(pwm_values[7]-5*wiggle/6-increase*wiggle/6))
 
-				pwm.set_pwm(8, 0, int(pwm8+5*reach_wiggle/6+increase*reach_wiggle/6))
+				pwm.set_pwm(8, 0, int(pwm_values[8]+5*reach_wiggle/6+increase*reach_wiggle/6))
 				pass
 
 	elif name == 'IV':
@@ -808,17 +811,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(9, 0, int(pwm9-wiggle+increase*wiggle))
+				pwm.set_pwm(9, 0, int(pwm_values[9]-wiggle+increase*wiggle))
 
-				pwm.set_pwm(10, 0, int(pwm10+wiggle-2*increase*wiggle))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+wiggle-2*increase*wiggle))
 
-				pwm.set_pwm(11, 0, int(pwm11-reach_wiggle-increase*(max_wiggle-reach_wiggle)))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-reach_wiggle-increase*(max_wiggle-reach_wiggle)))
 			else:
-				pwm.set_pwm(9, 0, int(pwm9+wiggle-increase*wiggle))
+				pwm.set_pwm(9, 0, int(pwm_values[9]+wiggle-increase*wiggle))
 
-				pwm.set_pwm(10, 0, int(pwm10+wiggle/4-5*increase*wiggle/4))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+wiggle/4-5*increase*wiggle/4))
 
-				pwm.set_pwm(11, 0, int(pwm11-increase*max_wiggle))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-increase*max_wiggle))
 				pass
 
 		elif pos == 2:
@@ -827,17 +830,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			<2>-3--4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(9, 0, int(pwm9+increase*wiggle))
+				pwm.set_pwm(9, 0, int(pwm_values[9]+increase*wiggle))
 
-				pwm.set_pwm(10, 0, int(pwm10-wiggle+5*increase*wiggle/4))
+				pwm.set_pwm(10, 0, int(pwm_values[10]-wiggle+5*increase*wiggle/4))
 
-				pwm.set_pwm(11, 0, int(pwm11-max_wiggle+increase*max_wiggle))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-max_wiggle+increase*max_wiggle))
 			else:
-				pwm.set_pwm(9, 0, int(pwm9-increase*wiggle))
+				pwm.set_pwm(9, 0, int(pwm_values[9]-increase*wiggle))
 
-				pwm.set_pwm(10, 0, int(pwm10-wiggle+2*wiggle*increase))
+				pwm.set_pwm(10, 0, int(pwm_values[10]-wiggle+2*wiggle*increase))
 
-				pwm.set_pwm(11, 0, int(pwm11-max_wiggle+increase*(max_wiggle-reach_wiggle)))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-max_wiggle+increase*(max_wiggle-reach_wiggle)))
 				pass
 
 		elif pos == 3:
@@ -846,17 +849,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2-<3>-4--5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(9, 0, int(pwm9+wiggle-increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]+wiggle-increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+wiggle/4+increase*wiggle/12))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+wiggle/4+increase*wiggle/12))
 
-				pwm.set_pwm(11, 0, int(pwm11-increase*reach_wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(9, 0, int(pwm9-wiggle+increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]-wiggle+increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+wiggle-increase*wiggle/6))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+wiggle-increase*wiggle/6))
 
-				pwm.set_pwm(11, 0, int(pwm11-reach_wiggle+increase*reach_wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-reach_wiggle+increase*reach_wiggle/6))
 				pass
 
 		elif pos == 4:
@@ -865,17 +868,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3-<4>-5--6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(9, 0, int(pwm9+2*wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]+2*wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+wiggle/3+increase*wiggle/12))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+wiggle/3+increase*wiggle/12))
 
-				pwm.set_pwm(11, 0, int(pwm11-reach_wiggle/6-increase*reach_wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-reach_wiggle/6-increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(9, 0, int(pwm9-2*wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]-2*wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+5*wiggle/6-increase*wiggle/6))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+5*wiggle/6-increase*wiggle/6))
 
-				pwm.set_pwm(11, 0, int(pwm11-5*reach_wiggle/6+increase*reach_wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-5*reach_wiggle/6+increase*reach_wiggle/6))
 				pass
 
 		elif pos == 5:
@@ -884,17 +887,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4-<5>-6--7--8-
 			'''
 			if direction:
-				pwm.set_pwm(9, 0, int(pwm9+wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]+wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+5*wiggle/12+increase*wiggle/12))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+5*wiggle/12+increase*wiggle/12))
 
-				pwm.set_pwm(11, 0, int(pwm11-reach_wiggle/3-increase*reach_wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-reach_wiggle/3-increase*reach_wiggle/6))
 			else:
-				pwm.set_pwm(9, 0, int(pwm9-wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]-wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+2*wiggle/3-increase*wiggle/6))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+2*wiggle/3-increase*wiggle/6))
 
-				pwm.set_pwm(11, 0, int(pwm11-2*reach_wiggle/3+increase*reach_wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-2*reach_wiggle/3+increase*reach_wiggle/6))
 				pass
 
 		elif pos == 6:
@@ -903,17 +906,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5-<6>-7--8-
 			'''
 			if direction:
-				pwm.set_pwm(9, 0, int(pwm9-increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]-increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+wiggle/2+increase*wiggle/6))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+wiggle/2+increase*wiggle/6))
 
-				pwm.set_pwm(11, 0, int(pwm11-reach_wiggle/2-increase*wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-reach_wiggle/2-increase*wiggle/6))
 			else:
-				pwm.set_pwm(9, 0, int(pwm9+increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]+increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+wiggle/2-increase*wiggle/12))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+wiggle/2-increase*wiggle/12))
 
-				pwm.set_pwm(11, 0, int(pwm11-reach_wiggle/2+increase*reach_wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-reach_wiggle/2+increase*reach_wiggle/6))
 				pass
 
 		elif pos == 7:
@@ -922,17 +925,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6-<7>-8-
 			'''
 			if direction:
-				pwm.set_pwm(9, 0, int(pwm9-wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]-wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+4*wiggle/6+increase*wiggle/6))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+4*wiggle/6+increase*wiggle/6))
 
-				pwm.set_pwm(11, 0, int(pwm11-2*reach_wiggle/3-increase*wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-2*reach_wiggle/3-increase*wiggle/6))
 			else:
-				pwm.set_pwm(9, 0, int(pwm9+wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]+wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+5*wiggle/12-increase*wiggle/12))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+5*wiggle/12-increase*wiggle/12))
 
-				pwm.set_pwm(11, 0, int(pwm11-reach_wiggle/3+increase*reach_wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-reach_wiggle/3+increase*reach_wiggle/6))
 				pass
 
 		elif pos == 8:
@@ -941,17 +944,17 @@ def leg_tripod(name, pos, spot, wiggle):
 			-2--3--4--5--6--7-<8>
 			'''
 			if direction:
-				pwm.set_pwm(9, 0, int(pwm9-2*wiggle/3-increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]-2*wiggle/3-increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+5*wiggle/6+increase*wiggle/6))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+5*wiggle/6+increase*wiggle/6))
 
-				pwm.set_pwm(11, 0, int(pwm11-5*reach_wiggle/6-increase*wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-5*reach_wiggle/6-increase*wiggle/6))
 			else:
-				pwm.set_pwm(9, 0, int(pwm9+2*wiggle/3+increase*wiggle/3))
+				pwm.set_pwm(9, 0, int(pwm_values[9]+2*wiggle/3+increase*wiggle/3))
 
-				pwm.set_pwm(10, 0, int(pwm10+wiggle/3-increase*wiggle/12))
+				pwm.set_pwm(10, 0, int(pwm_values[10]+wiggle/3-increase*wiggle/12))
 
-				pwm.set_pwm(11, 0, int(pwm11-reach_wiggle/6+increase*reach_wiggle/6))
+				pwm.set_pwm(11, 0, int(pwm_values[11]-reach_wiggle/6+increase*reach_wiggle/6))
 				pass
 
 
@@ -1050,13 +1053,13 @@ def robot_X(wiggle, amp):
 	when amp is 0, robot <body>
 	when amp is 100, robot >body<
 	'''
-	pwm.set_pwm(0, 0, int(pwm0-wiggle+2*wiggle*amp/100))
+	pwm.set_pwm(0, 0, int(pwm_values[0]-wiggle+2*wiggle*amp/100))
 
-	pwm.set_pwm(3, 0, int(pwm3-wiggle+2*wiggle*amp/100))
+	pwm.set_pwm(3, 0, int(pwm_values[3]-wiggle+2*wiggle*amp/100))
 
-	pwm.set_pwm(6, 0, int(pwm6+wiggle-2*wiggle*amp/100))
+	pwm.set_pwm(6, 0, int(pwm_values[6]+wiggle-2*wiggle*amp/100))
 
-	pwm.set_pwm(9, 0, int(pwm9+wiggle-2*wiggle*amp/100))
+	pwm.set_pwm(9, 0, int(pwm_values[9]+wiggle-2*wiggle*amp/100))
 
 
 def robot_hight(wiggle, amp):
@@ -1064,13 +1067,13 @@ def robot_hight(wiggle, amp):
 	when amp is 0, robot <heighest>.
 	when amp is 100, robot <lowest>.
 	'''
-	pwm.set_pwm(1, 0, int(pwm1+wiggle-2*wiggle*amp/100))
+	pwm.set_pwm(1, 0, int(pwm_values[1]+wiggle-2*wiggle*amp/100))
 
-	pwm.set_pwm(4, 0, int(pwm4-wiggle+2*wiggle*amp/100))
+	pwm.set_pwm(4, 0, int(pwm_values[4]-wiggle+2*wiggle*amp/100))
 
-	pwm.set_pwm(7, 0, int(pwm7-wiggle+2*wiggle*amp/100))
+	pwm.set_pwm(7, 0, int(pwm_values[7]-wiggle+2*wiggle*amp/100))
 
-	pwm.set_pwm(10, 0, int(pwm10+wiggle-2*wiggle*amp/100))
+	pwm.set_pwm(10, 0, int(pwm_values[10]+wiggle-2*wiggle*amp/100))
 
 
 def look_home():
@@ -1081,10 +1084,10 @@ def robot_stand(wiggle_input):
 	robot_X(wiggle_input, 50)
 	robot_hight(wiggle_input, 0)
 
-	pwm.set_pwm(2, 0, pwm2)
-	pwm.set_pwm(5, 0, pwm5)
-	pwm.set_pwm(8, 0, pwm8)
-	pwm.set_pwm(11, 0, pwm11)
+	pwm.set_pwm(2, 0, pwm_values[2])
+	pwm.set_pwm(5, 0, pwm_values[5])
+	pwm.set_pwm(8, 0, pwm_values[8])
+	pwm.set_pwm(11, 0, pwm_values[11])
 
 
 def ctrl_range(raw, max_genout, min_genout):
@@ -1104,13 +1107,13 @@ def ctrl_pitch_roll(wiggle, pitch, roll):
 	default values are 0.
 	range(-100, 100)
 	'''
-	pwm.set_pwm(1, 0, ctrl_range((pwm1-wiggle*pitch/100-wiggle*roll/100), pwm1_max, pwm1_min))
+	# pwm.set_pwm(1, 0, ctrl_range((pwm_values[1]-wiggle*pitch/100-wiggle*roll/100), pwm_values[1]_max, pwm_values[1]_min))
 
-	pwm.set_pwm(4, 0, ctrl_range((pwm4-wiggle*pitch/100+wiggle*roll/100), pwm4_max, pwm4_min))
+	# pwm.set_pwm(4, 0, ctrl_range((pwm_values[4]-wiggle*pitch/100+wiggle*roll/100), pwm_values[4]_max, pwm_values[4]_min))
 
-	pwm.set_pwm(7, 0, ctrl_range((pwm7+wiggle*pitch/100-wiggle*roll/100), pwm7_max, pwm7_min))
+	# pwm.set_pwm(7, 0, ctrl_range((pwm_values[7]+wiggle*pitch/100-wiggle*roll/100), pwm_values[7]_max, pwm_values[7]_min))
 
-	pwm.set_pwm(10, 0, ctrl_range((pwm10+wiggle*pitch/100+wiggle*roll/100), pwm10_max, pwm10_min))
+	# pwm.set_pwm(10, 0, ctrl_range((pwm_values[10]+wiggle*pitch/100+wiggle*roll/100), pwm_values[10]_max, pwm_values[10]_min))
 
 
 def ctrl_yaw(wiggle, yaw):
@@ -1118,13 +1121,13 @@ def ctrl_yaw(wiggle, yaw):
 	look left <- yaw -> look right
 	default value is 0
 	'''
-	pwm.set_pwm(2, 0, pwm2)
+	pwm.set_pwm(2, 0, pwm_values[2])
 
-	pwm.set_pwm(5, 0, pwm5)
+	pwm.set_pwm(5, 0, pwm_values[5])
 
-	pwm.set_pwm(8, 0, pwm8)
+	pwm.set_pwm(8, 0, pwm_values[8])
 
-	pwm.set_pwm(11, 0, pwm11)
+	pwm.set_pwm(11, 0, pwm_values[11])
 
 
 def steady():
