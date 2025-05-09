@@ -7,7 +7,7 @@ Adeept DarkPaw Quadruped Robot is an open source intelligent robotics product fo
 [RobotName]: Adeept DarkPaw Quadruped Robot \
 [Item Code]: ADR016 \
 [Official Raspberry Pi website]: https://www.raspberrypi.org/downloads/    \
-[Official website]:  https://www.adeept.com/     \
+[Official website]:  https://www.adeept.com/     
 
 
 ## Getting Support or Providing Advice
