@@ -1,0 +1,23 @@
+{
+  "name": {
+    "zh-cn": "RobotBit扩展板",
+    "en": "RobotBit expansion board"
+  },
+  "description": {
+    "zh-cn": "4路电机、2路步进电机、8路舵机、WS2812彩灯、锂电 by:DouDad",
+    "en": "4-way Motor,2-way stepper,18-wayservo,WS2812,18650 by:DouDad"
+  },
+  "author": "DouDad",
+  "email": "1545148519@qq.com",
+  "license": "MIT",
+  "id": "RobotBit",
+  "version": "0.0.1",
+  "platform": ["win"],
+  "asset": {
+    "micropython": {
+      "dir": "micropython/",
+      "board": ["microbit", "esp32"],
+      "main": "main.ts"
+    }
+  }
+}

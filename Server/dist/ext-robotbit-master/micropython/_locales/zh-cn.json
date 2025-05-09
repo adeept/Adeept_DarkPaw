@@ -1,0 +1,21 @@
+{
+    "RobotBit.robotbitInit|block": "RobotBit扩展板初始化",
+    "RobotBit.motorRun|block": "电机[motor]速度[speed]",
+    "RobotBit.motoStop|block": "停止[motor]电机",	
+    "RobotBit.motoStopAll|block": "停止所有电机",
+    "RobotBit.servo|block": "9g舵机[servo] 角度[angel]°",
+    "RobotBit.servoGeek|block": "Geek 9g舵机[servo] 角度[angel]",	
+    "RobotBit.servo2Kg|block": "Geek 2Kg舵机[servo] 角度[angel]",	
+    "RobotBit.stepperDegree|block": "28BYJ-48步进[stepper] 角度[angel]",	
+    "RobotBit.stepperDual|block": "双28BYJ-48步进电机M1角度[m1angel] M2角度[m2angel]",
+    "RobotBit.GetRgb|block": "红[RED]绿[GREEN]黄[YELLOW]",
+    "RobotBit.NeopixelColorSlider|block": "[RGB]号彩灯颜色(CSB)：[COLOR]",
+    "RobotBit.NeopixelColorPalette|block": "[RGB]号彩灯颜色(PLT)：[COLOR]",
+    "RobotBit.NeopixelRgb|block": "[RGB]号彩灯颜色(RGB)：红[RED]绿[GREEN]黄[YELLOW]",
+    "RobotBit.NeopixelColorSliderAll|block": "所有彩灯颜色(CSB)：[COLOR]",
+    "RobotBit.NeopixelColorPaletteAll|block": "所有彩灯颜色(PLT)：[COLOR]",
+    "RobotBit.NeopixelRgbAll|block": "所有彩灯颜色(RGB)：红[RED] 绿[GREEN] 黄[YELLOW]",
+    "RobotBit.NeopixelClear|block": "关闭所有彩灯",
+    "RobotBit.NeopixelOff|block": "关闭[RGB]号彩灯",
+    "RobotBit.roSonar|block": "读取[pin]超声波测距(cm)"
+}
