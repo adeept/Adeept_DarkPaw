@@ -8,24 +8,11 @@
 import time
 from rpi_ws281x import *
 import argparse
-
-# LED strip configuration:
-LED_COUNT      = 16      # Number of LED pixels.
-LED_PIN        = 12      # GPIO pin connected to the pixels (18 uses PWM!).
-#LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
-LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
-LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
-LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
-LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
-LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
-
-BREATH = 1
-color = 'yellow'
-FRE_TIME = 50
-DELY = 0.1
+import threading
 
 class LED:
     def __init__(self):
+        # LED strip configuration:
         self.LED_COUNT      = 16      # Number of LED pixels.
         self.LED_PIN        = 12      # GPIO pin connected to the pixels (18 uses PWM!).
         self.LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
@@ -33,6 +20,14 @@ class LED:
         self.LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
         self.LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
         self.LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
+
+        # Internal state
+        self.breath_enabled = True
+        self.color = 'yellow'
+        self.frequency = 50
+        self.delay = 0.1
+        self.state_lock = threading.Lock()
+
         parser = argparse.ArgumentParser()
         parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
         args = parser.parse_args()
@@ -42,88 +37,59 @@ class LED:
         # Intialize the library (must be called once before other functions).
         self.strip.begin()
 
-    # Define functions which animate LEDs in various ways.
     def colorWipe(self, color, wait_ms=0):
         """Wipe color across display a pixel at a time."""
         for i in range(self.strip.numPixels()):
             self.strip.setPixelColor(i, color)
-            self.strip.show()
-            #time.sleep(wait_ms/1000.0)
-
+        self.strip.show()
+        if wait_ms > 0:
+            time.sleep(wait_ms/1000.0)
 
     def breath_status_set(self, status):
-        global BREATH
-        BREATH = status
-
+        with self.state_lock:
+            self.breath_enabled = bool(status)
 
     def breath_color_set(self, invar):
-        global color
-        color = invar
-
+        with self.state_lock:
+            self.color = invar
 
     def breath_frequency_set(self, frequency_input):
-        global FRE_TIME
-        FRE_TIME = frequency_input
-
+        with self.state_lock:
+            self.frequency = frequency_input
 
     def breath(self, brightness):
-        while 1:
-            if BREATH:
-                if color == 'red':
-                    for a in range(0, brightness, FRE_TIME):
-                        if not BREATH:
-                            break
-                        else:
-                            self.colorWipe(Color(a,0,0))
-                            time.sleep(DELY)
-                    for b in range(0, brightness, FRE_TIME):
-                        if not BREATH:
-                            break
-                        else:
-                            self.colorWipe(Color(((brightness-1)-b),0,0))
-                            time.sleep(DELY)
-                elif color == 'green':
-                    for a in range(0, brightness, FRE_TIME):
-                        if not BREATH:
-                            break
-                        else:
-                            self.colorWipe(Color(0,a,0))
-                            time.sleep(DELY)
-                    for b in range(0, brightness, FRE_TIME):
-                        if not BREATH:
-                            break
-                        else:
-                            self.colorWipe(Color(0,((brightness-1)-b),0))
-                            time.sleep(DELY)
-                elif color == 'yellow':
-                    for a in range(0, brightness, FRE_TIME):
-                        if not BREATH:
-                            break
-                        else:
-                            self.colorWipe(Color(a,a,0))
-                            time.sleep(DELY)
-                    for b in range(0, brightness, FRE_TIME):
-                        if not BREATH:
-                            break
-                        else:
-                            self.colorWipe(Color(((brightness-1)-b),((brightness-1)-b),0))
-                            time.sleep(DELY)
-                elif color == 'blue':
-                    for a in range(0, brightness, FRE_TIME):
-                        if not BREATH:
-                            break
-                        else:
-                            self.colorWipe(Color(0,a,a))
-                            time.sleep(DELY)
-                    for b in range(0, brightness, FRE_TIME):
-                        if not BREATH:
-                            break
-                        else:
-                            self.colorWipe(Color(0,((brightness-1)-b),((brightness-1)-b)))
-                            time.sleep(DELY)
-            else:
-                time.sleep(0.2)
+        color_map = {
+            'red': (1, 0, 0),
+            'green': (0, 1, 0),
+            'blue': (0, 0, 1),
+            'yellow': (1, 1, 0),
+        }
 
-#led=LED()
-#led.breath(255)
-#led.colorWipe(Color(0,0,0))
+        while True:
+            with self.state_lock:
+                enabled = self.breath_enabled
+                color_name = self.color
+                freq = self.frequency
+
+            if not enabled:
+                time.sleep(0.2)
+                continue
+
+            r_base, g_base, b_base = color_map.get(color_name, (0, 1, 1)) # Default to a cyan-ish blue
+
+            # Fade In
+            for i in range(0, brightness, freq):
+                with self.state_lock:
+                    if not self.breath_enabled: break
+                if i > 255: i = 255 # cap brightness
+                self.colorWipe(Color(r_base*i, g_base*i, b_base*i))
+                time.sleep(self.delay)
+
+            # Fade Out
+            for i in range(0, brightness, freq):
+                with self.state_lock:
+                    if not self.breath_enabled: break
+                level = brightness - 1 - i
+                if level < 0: level = 0 # cap brightness
+                self.colorWipe(Color(r_base*level, g_base*level, b_base*level))
+                time.sleep(self.delay)

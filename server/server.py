@@ -5,394 +5,332 @@
 # E-mail      : support@adeept.com
 # Author      : William
 # Date        : 2018/08/22
+# Refactored  : Jules
 
 import socket
 import time
 import threading
 import move
 import Adafruit_PCA9685
-from rpi_ws281x import *
-import argparse
+from rpi_ws281x import Color
 import os
 import FPV
 import psutil
 import switch
 import LED
+import logging
+import subprocess
 
-'''
-Initiation number of steps, don't have to change it.
-'''
-step_set = 1
+# Setup basic logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-'''
-The range of the legs wiggling, you can decrease it to make the robot slower while the frequency unchanged.
-DO NOT increase or it may cause mechanical collisions.
-'''
-speed_set = 150
+class Server:
+    def __init__(self, host='', port=10223):
+        # Constants
+        self.HOST = host
+        self.PORT = port
+        self.BUFSIZ = 1024
+        self.ADDR = (self.HOST, self.PORT)
+        self.INFO_PORT = 2256
 
-'''
-Initiation commands
-'''
-direction_command = 'no'
-turn_command = 'no'
+        # Hardware and state variables
+        self.pwm = Adafruit_PCA9685.PCA9685()
+        self.led = LED.LED()
+        self.fpv = FPV.FPV(led_instance=self.led)
 
-pwm = Adafruit_PCA9685.PCA9685()
-pwm.set_pwm_freq(50)
-LED = LED.LED()
+        # State
+        self.step_set = 1
+        self.speed_set = 150
+        self.direction_command = 'no'
+        self.turn_command = 'no'
+        self.smooth_mode = 0
+        self.steady_mode = 0
 
-SmoothMode = 0
-steadyMode = 0
+        # Sockets
+        self.tcp_ser_sock = None
+        self.tcp_cli_sock = None
+        self.client_addr = None
 
-def breath_led():
-    LED.breath(255)
+        # Threads
+        self.threads = []
+        self.state_lock = threading.Lock()
 
+    def _start_thread(self, target, args=()):
+        thread = threading.Thread(target=target, args=args)
+        thread.daemon = True
+        thread.start()
+        self.threads.append(thread)
 
-def ap_thread():
-    os.system("sudo create_ap wlan0 eth0 AdeeptCar 12345678")
-
-
-def get_cpu_tempfunc():
-    """ Return CPU temperature """
-    result = 0
-    mypath = "/sys/class/thermal/thermal_zone0/temp"
-    with open(mypath, 'r') as mytmpfile:
-        for line in mytmpfile:
-            result = line
-
-    result = float(result)/1000
-    result = round(result, 1)
-    return str(result)
-
-
-def get_gpu_tempfunc():
-    """ Return GPU temperature as a character string"""
-    res = os.popen('/opt/vc/bin/vcgencmd measure_temp').readline()
-    return res.replace("temp=", "")
-
-
-def get_cpu_use():
-    """ Return CPU usage using psutil"""
-    cpu_cent = psutil.cpu_percent()
-    return str(cpu_cent)
-
-
-def get_ram_info():
-    """ Return RAM usage using psutil """
-    ram_cent = psutil.virtual_memory()[2]
-    return str(ram_cent)
-
-
-def get_swap_info():
-    """ Return swap memory  usage using psutil """
-    swap_cent = psutil.swap_memory()[3]
-    return str(swap_cent)
-
-
-def info_get():
-    global cpu_t,cpu_u,gpu_t,ram_info
-    while 1:
-        cpu_t = get_cpu_tempfunc()
-        cpu_u = get_cpu_use()
-        ram_info = get_ram_info()
-        time.sleep(3)
-
-
-def move_thread():
-    global step_set
-    stand_stu = 1
-    while 1:
-        if not steadyMode:
-            if direction_command == 'forward' and turn_command == 'no':
-                stand_stu = 0
-                move.dove_move_tripod(step_set, 150, 'forward')
-                step_set += 1
-                if step_set == 9:
-                    step_set = 1
-                continue
-
-            elif direction_command == 'backward' and turn_command == 'no':
-                stand_stu = 0
-                move.dove_move_tripod(step_set, 150, 'backward')
-                step_set += 1
-                if step_set == 9:
-                    step_set = 1
-                continue
-
-            else:
-                pass
-
-            if turn_command != 'no':
-                stand_stu = 0
-                move.dove_move_diagonal(step_set, 150, turn_command)
-                step_set += 1
-                if step_set == 9:
-                    step_set = 1
-                continue
-            else:
-                pass
-
-            if turn_command == 'no' and direction_command == 'stand':
-                if stand_stu == 0:
-                    move.robot_stand(150)
-                    step_set = 1
-                    stand_stu = 1
-                else:
-                    time.sleep(0.01)
-                    pass
-
-            pass
-        else:
-            pass
-            move.robot_X(150, 100)
-            move.steady()
-            #print('steady')
-            #time.sleep(0.2)
-
-
-def info_send_client():
-    SERVER_IP = addr[0]
-    SERVER_PORT = 2256   #Define port serial 
-    SERVER_ADDR = (SERVER_IP, SERVER_PORT)
-    Info_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #Set connection value for socket
-    Info_Socket.connect(SERVER_ADDR)
-    print(SERVER_ADDR)
-    while 1:
+    @staticmethod
+    def _ap_thread():
+        logging.info("Starting Wi-Fi access point...")
         try:
-            Info_Socket.send((get_cpu_tempfunc()+' '+get_cpu_use()+' '+get_ram_info()).encode())
-            time.sleep(1)
-        except:
-            pass
+            subprocess.run(
+                ["sudo", "create_ap", "wlan0", "eth0", "AdeeptCar", "12345678"],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Failed to start access point: {e}\n{e.stderr}")
+        except FileNotFoundError:
+            logging.error("`create_ap` command not found. Please install it.")
 
+    @staticmethod
+    def _get_cpu_temp():
+        """ Returns CPU temperature as a string. """
+        try:
+            with open("/sys/class/thermal/thermal_zone0/temp") as mytmpfile:
+                result = float(mytmpfile.read()) / 1000
+                return f"{result:.1f}"
+        except FileNotFoundError:
+            logging.warning("Cannot read CPU temperature.")
+            return "N/A"
 
-def FPV_thread():
-    global fpv
-    fpv=FPV.FPV()
-    fpv.capture_thread(addr[0])
+    @staticmethod
+    def _get_cpu_use():
+        """ Returns CPU usage as a string. """
+        return str(psutil.cpu_percent())
 
+    @staticmethod
+    def _get_ram_info():
+        """ Returns RAM usage as a string. """
+        return str(psutil.virtual_memory()[2])
 
-def run():
-    global direction_command, turn_command, SmoothMode, steadyMode
-    try:
-        moving_threading=threading.Thread(target=move_thread)    #Define a thread for FPV and OpenCV
-        moving_threading.setDaemon(True)                             #'True' means it is a front thread,it would close when the mainloop() closes
+    def _move_thread(self):
+        stand_stu = 1
+        while True:
+            with self.state_lock:
+                steady = self.steady_mode
+                direction = self.direction_command
+                turn = self.turn_command
+                step = self.step_set
+
+            if not steady:
+                if direction == 'forward' and turn == 'no':
+                    stand_stu = 0
+                    move.dove_move_tripod(step, 150, 'forward')
+                    with self.state_lock:
+                        self.step_set = (self.step_set % 8) + 1
+                elif direction == 'backward' and turn == 'no':
+                    stand_stu = 0
+                    move.dove_move_tripod(step, 150, 'backward')
+                    with self.state_lock:
+                        self.step_set = (self.step_set % 8) + 1
+                elif turn != 'no':
+                    stand_stu = 0
+                    move.dove_move_diagonal(step, 150, turn)
+                    with self.state_lock:
+                        self.step_set = (self.step_set % 8) + 1
+                elif direction == 'stand' and turn == 'no':
+                    if not stand_stu:
+                        move.robot_stand(150)
+                        with self.state_lock:
+                            self.step_set = 1
+                        stand_stu = 1
+                    time.sleep(0.01)
+            else:
+                move.robot_X(150, 100)
+                move.steady()
+            time.sleep(0.01) # Avoid busy-waiting
+
+    def _info_send_client_thread(self):
+        server_ip = self.client_addr[0]
+        server_addr = (server_ip, self.INFO_PORT)
+
+        while True:
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as info_socket:
+                    info_socket.connect(server_addr)
+                    logging.info(f"Info stream connected to {server_addr}")
+                    while True:
+                        info_payload = f"{self._get_cpu_temp()} {self._get_cpu_use()} {self._get_ram_info()}"
+                        info_socket.send(info_payload.encode())
+                        time.sleep(1)
+            except socket.error as e:
+                logging.error(f"Info stream connection error: {e}. Retrying in 5 seconds...")
+                time.sleep(5)
+
+    def _fpv_thread(self):
+        self.fpv.capture_thread(self.client_addr[0])
+
+    def _handle_client_commands(self):
+        ws_R = 0
+        ws_G = 0
+        ws_B = 0
+
+        while True:
+            try:
+                data = self.tcp_cli_sock.recv(self.BUFSIZ).decode().strip()
+                if not data:
+                    logging.warning("Client disconnected.")
+                    break
+
+                logging.info(f"Received command: {data}")
+
+                with self.state_lock:
+                    if 'forward' == data: self.direction_command = 'forward'
+                    elif 'backward' == data: self.direction_command = 'backward'
+                    elif 'DS' in data: self.direction_command = 'stand'
+                    elif 'left' == data: self.turn_command = 'left'
+                    elif 'right' == data: self.turn_command = 'right'
+                    elif 'leftside' == data: self.turn_command = 'left'
+                    elif 'rightside' == data: self.turn_command = 'right'
+                    elif 'TS' in data: self.turn_command = 'no'
+
+                if 'headup' == data: move.ctrl_pitch_roll(150, -100, 0)
+                elif 'headdown' == data: move.ctrl_pitch_roll(150, 100, 0)
+                elif 'headhome' == data: move.ctrl_pitch_roll(150, 0, 0)
+                elif 'low' == data: move.robot_stand(-150)
+                elif 'hight' == data: move.robot_stand(150)
+                elif 'wsR' in data:
+                    try:
+                        ws_R = int(data.split()[1])
+                        self.led.colorWipe(Color(ws_R, ws_G, ws_B))
+                    except (ValueError, IndexError) as e:
+                        logging.error(f"Invalid wsR command: {data}, error: {e}")
+                elif 'wsG' in data:
+                    try:
+                        ws_G = int(data.split()[1])
+                        self.led.colorWipe(Color(ws_R, ws_G, ws_B))
+                    except (ValueError, IndexError) as e:
+                        logging.error(f"Invalid wsG command: {data}, error: {e}")
+                elif 'wsB' in data:
+                    try:
+                        ws_B = int(data.split()[1])
+                        self.led.colorWipe(Color(ws_R, ws_G, ws_B))
+                    except (ValueError, IndexError) as e:
+                        logging.error(f"Invalid wsB command: {data}, error: {e}")
+                elif 'FindColor' in data:
+                    self.led.breath_status_set(1)
+                    self.fpv.FindColor(1)
+                    self.tcp_cli_sock.send('FindColor'.encode())
+                elif 'WatchDog' in data:
+                    self.led.breath_status_set(1)
+                    self.fpv.WatchDog(1)
+                    self.tcp_cli_sock.send('WatchDog'.encode())
+                elif 'steady' in data:
+                    with self.state_lock:
+                        self.steady_mode = 1
+                    self.led.breath_status_set(1)
+                    self.led.breath_color_set('blue')
+                    self.tcp_cli_sock.send('steady'.encode())
+                elif 'funEnd' in data:
+                    with self.state_lock:
+                        self.steady_mode = 0
+                    self.led.breath_status_set(0)
+                    self.fpv.FindColor(0)
+                    self.fpv.WatchDog(0)
+                    self.tcp_cli_sock.send('FunEnd'.encode())
+                elif 'Smooth_on' in data:
+                    with self.state_lock:
+                        self.smooth_mode = 1
+                    self.tcp_cli_sock.send('Smooth_on'.encode())
+                elif 'Smooth_off' in data:
+                    with self.state_lock:
+                        self.smooth_mode = 0
+                    self.tcp_cli_sock.send('Smooth_off'.encode())
+                elif 'Switch_1_on' in data: switch.switch(1, 1); self.tcp_cli_sock.send('Switch_1_on'.encode())
+                elif 'Switch_1_off' in data: switch.switch(1, 0); self.tcp_cli_sock.send('Switch_1_off'.encode())
+                elif 'Switch_2_on' in data: switch.switch(2, 1); self.tcp_cli_sock.send('Switch_2_on'.encode())
+                elif 'Switch_2_off' in data: switch.switch(2, 0); self.tcp_cli_sock.send('Switch_2_off'.encode())
+                elif 'Switch_3_on' in data: switch.switch(3, 1); self.tcp_cli_sock.send('Switch_3_on'.encode())
+                elif 'Switch_3_off' in data: switch.switch(3, 0); self.tcp_cli_sock.send('Switch_3_off'.encode())
+            except socket.error as e:
+                logging.error(f"Socket error in command loop: {e}")
+                break
+            except Exception as e:
+                logging.error(f"An unexpected error occurred in command loop: {e}")
+                break
     
-        moving_threading.start()    
-                                     #Thread starts
-    except Exception as e:
-        print('Error while setting moving thread: ' + e)
+    def setup(self):
+        logging.info("Setting up hardware...")
+        switch.switchSetup()
+        switch.set_all_switch_off()
+        self.pwm.set_pwm_freq(50)
+        move.init_servos()
         
-    try:
-        info_threading=threading.Thread(target=info_send_client)    #Define a thread for FPV and OpenCV
-        info_threading.setDaemon(True)                             #'True' means it is a front thread,it would close when the mainloop() closes
-        info_threading.start()                                     #Thread starts
-    except Exception as e:
-        print('Error in info_send_client: ' + e)
-        
-    ws_R = 0
-    ws_G = 0
-    ws_B = 0
+        try:
+            self._start_thread(target=self.led.breath, args=(255,))
+            self.led.breath_color_set('blue')
+        except Exception as e:
+            logging.error(f"Failed to start LED thread. Is rpi_ws281x installed? Error: {e}")
 
-    Y_pitch = 300
-    Y_pitch_MAX = 600
-    Y_pitch_MIN = 100
+    def wait_for_connection(self):
+        # Check for existing network connection, otherwise start AP
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.connect(("1.1.1.1", 80))
+                ipaddr_check = s.getsockname()[0]
+                logging.info(f"Connected to network with IP: {ipaddr_check}")
+        except OSError:
+            logging.info("No network connection. Starting access point thread.")
+            self._start_thread(target=self._ap_thread)
+            # Visual indicator for AP mode
+            colors = [Color(0,16,50), Color(0,16,100), Color(0,16,150), Color(0,16,200), Color(0,16,255), Color(35,255,35)]
+            for color in colors:
+                self.led.colorWipe(color)
+                time.sleep(1)
 
-    while True: 
-        data = ''
-        data = str(tcpCliSock.recv(BUFSIZ).decode())
-        if not data:
-            continue
-        elif 'forward' == data:
-            direction_command = 'forward'
-        elif 'backward' == data:
-            direction_command = 'backward'
-        elif 'DS' in data:
-            direction_command = 'stand'
-
-        elif 'left' == data:
-            turn_command = 'left'
-        elif 'right' == data:
-            turn_command = 'right'
-        elif 'leftside' == data:
-            turn_command = 'left'
-        elif 'rightside'== data:
-            turn_command = 'right'
-        elif 'TS' in data:
-            turn_command = 'no'
-
-        elif 'headup' == data:
-            move.ctrl_pitch_roll(150, -100, 0)
-        elif 'headdown' == data:
-            move.ctrl_pitch_roll(150, 100, 0)
-        elif 'headhome' == data:
-            move.ctrl_pitch_roll(150, 0, 0)
-
-        elif 'low' == data:
-            move.robot_stand(-150)
-        elif 'hight' == data:
-            move.robot_stand(150)
-        elif 'wsR' in data:
+        # Main server loop to accept client connection
+        while True:
             try:
-                set_R=data.split()
-                ws_R = int(set_R[1])
-                LED.colorWipe(Color(ws_R,ws_G,ws_B))
-            except:
-                pass
-        elif 'wsG' in data:
+                self.tcp_ser_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.tcp_ser_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                self.tcp_ser_sock.bind(self.ADDR)
+                self.tcp_ser_sock.listen(5)
+                logging.info(f"Server listening on {self.ADDR}")
+
+                self.tcp_cli_sock, self.client_addr = self.tcp_ser_sock.accept()
+                logging.info(f"Connection from: {self.client_addr}")
+                move.robot_stand(150)
+                return True # Connection successful
+            except Exception as e:
+                logging.error(f"Error accepting connection: {e}")
+                self.led.colorWipe(Color(0,0,0)) # Signal error
+                time.sleep(1) # Wait before retrying
+
+    def start(self):
+        self.setup()
+        if self.wait_for_connection():
             try:
-                set_G=data.split()
-                ws_G = int(set_G[1])
-                LED.colorWipe(Color(ws_R,ws_G,ws_B))
-            except:
-                pass
-        elif 'wsB' in data:
+                self.led.breath_status_set(0)
+                self.led.colorWipe(Color(64, 128, 255))
+            except Exception as e:
+                logging.error(f"Error setting LED after connection: {e}")
+
+            # Start all threads that depend on a client connection
+            self._start_thread(target=self._fpv_thread)
+            self._start_thread(target=self._move_thread)
+            self._start_thread(target=self._info_send_client_thread)
+
+            # Start blocking command handling
+            self._handle_client_commands()
+
+    def destroy(self):
+        logging.info("Shutting down server and cleaning up...")
+        if self.tcp_cli_sock:
             try:
-                set_B=data.split()
-                ws_B = int(set_B[1])
-                LED.colorWipe(Color(ws_R,ws_G,ws_B))
-            except:
-                pass
-
-        elif 'FindColor' in data:
-            LED.breath_status_set(1)
-            fpv.FindColor(1)
-            tcpCliSock.send(('FindColor').encode())
-
-        elif 'WatchDog' in data:
-            LED.breath_status_set(1)
-            fpv.WatchDog(1)
-            tcpCliSock.send(('WatchDog').encode())
-
-        elif 'steady' in data:
-            LED.breath_status_set(1)
-            LED.breath_color_set('blue')
-            steadyMode = 1
-            tcpCliSock.send(('steady').encode())
-
-        elif 'funEnd' in data:
-            LED.breath_status_set(0)
-            fpv.FindColor(0)
-            fpv.WatchDog(0)
-            steadyMode = 0
-            tcpCliSock.send(('FunEnd').encode())
-
-
-        elif 'Smooth_on' in data:
-            SmoothMode = 1
-            tcpCliSock.send(('Smooth_on').encode())
-
-        elif 'Smooth_off' in data:
-            SmoothMode = 0
-            tcpCliSock.send(('Smooth_off').encode())
-
-
-        elif 'Switch_1_on' in data:
-            switch.switch(1,1)
-            tcpCliSock.send(('Switch_1_on').encode())
-
-        elif 'Switch_1_off' in data:
-            switch.switch(1,0)
-            tcpCliSock.send(('Switch_1_off').encode())
-
-        elif 'Switch_2_on' in data:
-            switch.switch(2,1)
-            tcpCliSock.send(('Switch_2_on').encode())
-
-        elif 'Switch_2_off' in data:
-            switch.switch(2,0)
-            tcpCliSock.send(('Switch_2_off').encode())
-
-        elif 'Switch_3_on' in data:
-            switch.switch(3,1)
-            tcpCliSock.send(('Switch_3_on').encode())
-
-        elif 'Switch_3_off' in data:
-            switch.switch(3,0)
-            tcpCliSock.send(('Switch_3_off').encode())
-
-        else:
-            pass
-        #print(data)
-
-
-def destory():
-    move.clean_all()
+                self.tcp_cli_sock.close()
+            except socket.error as e:
+                logging.error(f"Error closing client socket: {e}")
+        if self.tcp_ser_sock:
+            try:
+                self.tcp_ser_sock.close()
+            except socket.error as e:
+                logging.error(f"Error closing server socket: {e}")
+        move.clean_all()
+        switch.set_all_switch_off()
+        self.led.colorWipe(Color(0,0,0))
 
 
 if __name__ == '__main__':
-    switch.switchSetup()
-    switch.set_all_switch_off()
-    move.init_servos()
-
-    HOST = ''
-    PORT = 10223                              #Define port serial 
-    BUFSIZ = 1024                             #Define buffer size
-    ADDR = (HOST, PORT)
-
+    server = Server()
     try:
-        led_threading=threading.Thread(target=breath_led)         #Define a thread for LED breathing
-        led_threading.setDaemon(True)                             #'True' means it is a front thread,it would close when the mainloop() closes
-        led_threading.start()                                     #Thread starts
-        LED.breath_color_set('blue')
-    except:
-        print('Use "sudo pip3 install rpi_ws281x" to install WS_281x package')
-        pass
-
-    while  1:
-        try:
-            s =socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-            s.connect(("1.1.1.1",80))
-            ipaddr_check=s.getsockname()[0]
-            s.close()
-            print(ipaddr_check)
-        except:
-            ap_threading=threading.Thread(target=ap_thread)   #Define a thread for data receiving
-            ap_threading.setDaemon(True)                          #'True' means it is a front thread,it would close when the mainloop() closes
-            ap_threading.start()                                  #Thread starts
-
-            LED.colorWipe(Color(0,16,50))
-            time.sleep(1)
-            LED.colorWipe(Color(0,16,100))
-            time.sleep(1)
-            LED.colorWipe(Color(0,16,150))
-            time.sleep(1)
-            LED.colorWipe(Color(0,16,200))
-            time.sleep(1)
-            LED.colorWipe(Color(0,16,255))
-            time.sleep(1)
-            LED.colorWipe(Color(35,255,35))
-
-        try:
-            tcpSerSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            tcpSerSock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
-            tcpSerSock.bind(ADDR)
-            tcpSerSock.listen(5)                      #Start server,waiting for client
-            print('waiting for connection...')
-            tcpCliSock, addr = tcpSerSock.accept()
-            print('...connected from :', addr)
-            move.robot_stand(150)
-
-            fps_threading=threading.Thread(target=FPV_thread)         #Define a thread for FPV and OpenCV
-            fps_threading.setDaemon(True)                             #'True' means it is a front thread,it would close when the mainloop() closes
-            fps_threading.start()                                     #Thread starts
-
-            break
-        except:
-            LED.colorWipe(Color(0,0,0))
-            pass
-
-    try:
-        LED.breath_status_set(0)
-        LED.colorWipe(Color(64,128,255))
-    except:
-        pass
-
-    try:
-        run()
+        server.start()
+    except KeyboardInterrupt:
+        logging.info("Keyboard interrupt received.")
     except Exception as e:
-        print('Something crashed: ' + e)
-        LED.colorWipe(Color(0,0,0))
-        destory()
-        move.clean_all()
-        switch.switch(1,0)
-        switch.switch(2,0)
-        switch.switch(3,0)
+        logging.critical(f"Unhandled exception in server: {e}")
+    finally:
+        server.destroy()
