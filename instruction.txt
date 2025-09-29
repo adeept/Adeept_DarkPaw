@@ -1,6 +1,3 @@
-First of all, the program should be done in the SD card, including writing the Raspberry Pi system, 
-downloading and installing the Rasptank program. 
-
 Pay attention to the case sensitivity during process of git clone . The specific operation process 
 is in the document and manual. It will automatically start up at boot after the program is successfully installed. 
 
