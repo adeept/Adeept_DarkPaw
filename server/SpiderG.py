@@ -6,16 +6,13 @@
 import socket
 import time
 import threading
+address=0x40
 try:
 	import Adafruit_PCA9685
-	pwm = Adafruit_PCA9685.PCA9685()
+	pwm = Adafruit_PCA9685.PCA9685(address, busnum=1)
 	pwm.set_pwm_freq(50)
 except:
-	import os
-	os.system("sudo pip3 install adafruit-pca9685")
-	import Adafruit_PCA9685
-	pwm = Adafruit_PCA9685.PCA9685()
-	pwm.set_pwm_freq(50)
+	pass
 
 MPU_connection = 1
 try:

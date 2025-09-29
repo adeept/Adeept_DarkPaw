@@ -40,10 +40,6 @@ def FPV_thread():
     fpv.capture_thread(addr[0])
 
 
-def  ap_thread():
-    os.system("sudo create_ap wlan0 eth0 Groovy 12345678")
-
-
 def run():
     global speed_set, functionMode, direction_command, turn_command
 
@@ -312,37 +308,6 @@ def run():
         print(data)
 
 
-def wifi_check():
-    try:
-        s =socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        s.connect(("1.1.1.1",80))
-        ipaddr_check=s.getsockname()[0]
-        s.close()
-        print(ipaddr_check)
-
-    except:
-        ap_threading=threading.Thread(target=ap_thread)   #Define a thread for data receiving
-        ap_threading.setDaemon(True)                          #'True' means it is a front thread,it would close when the mainloop() closes
-        ap_threading.start()                                  #Thread starts
-
-        LED.colorWipe(0,16,50)
-        time.sleep(1)
-
-        LED.colorWipe(0,16,100)
-        time.sleep(1)
-
-        LED.colorWipe(0,16,150)
-        time.sleep(1)
-
-        LED.colorWipe(0,16,200)
-        time.sleep(1)
-
-        LED.colorWipe(0,16,255)
-        time.sleep(1)
-
-        LED.colorWipe(35,255,35)
-
-
 
 if __name__ == '__main__':
     switch.switchSetup()
@@ -357,11 +322,10 @@ if __name__ == '__main__':
         LED  = LED.LED()
         LED.colorWipe(255,16,0)
     except:
-        print('Use "sudo pip3 install rpi_ws281x" to install WS_281x package\n使用"sudo pip3 install rpi_ws281x"命令来安装rpi_ws281x')
+        print('Use "sudo pip3 install rpi_ws281x" to install WS_281x package')
         pass
 
     while  1:
-        wifi_check()
         try:
             tcpSerSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             tcpSerSock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)

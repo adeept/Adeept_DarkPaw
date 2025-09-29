@@ -12,7 +12,8 @@ import Kalman_filter
 import PID
 
 
-pwm = Adafruit_PCA9685.PCA9685()
+address=0x40
+pwm = Adafruit_PCA9685.PCA9685(address, busnum=1)
 pwm.set_pwm_freq(50)
 
 for i in range(0,16):
